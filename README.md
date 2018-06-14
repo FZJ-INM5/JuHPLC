@@ -55,6 +55,7 @@ To find out the ip, you can easily run the ``` ipconfig ``` command and look for
 * [Pyserial](https://pythonhosted.org/pyserial/) - Allows us to connect with our arduino-based aqusition interface
 * [jQuery](https://jquery.com/) - The javascript framework driving the web
 * [Math.js](http://mathjs.org/) - For the implementation of [Eilers penalized least squares](https://pubs.acs.org/doi/abs/10.1021/ac034173t)
+* [Chromium](https://www.chromium.org/) - Used for PDF-Report generation
 
 ## Contributing
 
