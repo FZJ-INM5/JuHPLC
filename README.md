@@ -9,7 +9,7 @@ See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisites
 
-Install a fresh raspbian onto the SD card you are gonna use, connect network to it.
+Install a fresh raspbian onto the SD card you are gonna use and connect any network to it.
 
 ### Installing
 
@@ -31,15 +31,30 @@ Currently none - Todo
 
 ## Usage
 
-Use your favourite webbrowser and connect to the IP-address / name of the raspberry in it.
+Use your favourite webbrowser and connect to the IP-address / name of the raspberry with it.
+To find out the ip, you can easily run the ``` ipconfig ``` command and look for eth0.
+
+### Features
+* Data aquisition with our arduino-based interface
+* Integrating peaks
+* Selecting peaks and see their relativ areas
+* Zooming into graphs synchronized (X-axis-scaling affects all graphs)
+* Keyboard-shortcuts for all important actions (hover over the buttons to find out more!)
+* Free axis-scaling
+* Export functionality in several formats (CSV, Peaksimple, HTML, PDF-Reports)
+* Automatic Peak-Finding based on Savitzky-Golay-Smoothing and filtering
+* Free Baseline-editing using supporting points both, linear and with cubic splines
 
 ## Built With
 
 * [Django](https://www.djangoproject.com/) - The web framework used
+* [python](https://www.python.org/) - used for the backend code
 * [Dygraphs](http://dygraphs.com/) - An awesome charting-library
-* [python](https://www.python.org/) - Used to generate RSS Feeds
-* Bootstrap
-* and many more things to be added later
+* [Bootstrap](https://getbootstrap.com/) - Frontend framework that allows automatic resizing upon changing the window-size aswell as cross platform compatibility. (mobile devices)
+* [Vue.js](https://vuejs.org/) - used for dividing the frontend code into reusable components
+* [Pyserial](https://pythonhosted.org/pyserial/) - Allows us to connect with our arduino-based aqusition interface
+* [jQuery](https://jquery.com/) - The javascript framework driving the web
+* [Math.js](http://mathjs.org/) - For the implementation of [Eilers penalized least squares](https://pubs.acs.org/doi/abs/10.1021/ac034173t)
 
 ## Contributing
 
