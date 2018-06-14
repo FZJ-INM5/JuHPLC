@@ -1,0 +1,128 @@
+
+
+.starter-template {
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+    .card-block{
+        padding-left:1em;
+    }
+
+.hplc-btn {
+    margin: 1px;
+}
+
+.card-header-sm {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.juhplc-graph {
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 390px;
+}
+
+    .peakTable {
+        margin-top:25px;
+    }
+
+@media screen {
+    .peakTable {
+        max-height: 300px;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .dygraphsGraph {
+        height:320px;
+    }
+
+    .dygraphsDiv {
+        height:320px;
+    }
+
+}
+
+@media print {
+    @page {
+        size: 210mm 297mm;
+        -relaxed-page-width: 210mm;
+        -relaxed-page-height: 297mm;
+        margin: 15mm 10mm 15mm 10mm;
+    }
+
+    .juhplcPeakTable {
+        page-break-inside:avoid;
+    }
+
+
+
+    #app{
+
+    }
+
+    .dygraphsDiv {
+        height:550px;
+        page-break-inside:avoid;
+    }
+
+    .dygraphsGraph {
+        margin-bottom:100px;
+    }
+
+    .page-break {
+        float: none !important;
+        page-break-before: always;
+        overflow: hidden;
+        display: inline-block;
+    }
+
+    .page-break-after {
+        page-break-after: auto !important;
+    }
+
+    .page-break-before {
+        page-break-before: auto !important;
+    }
+
+    .page-break-inside-avoid{
+        page-break-inside:avoid;
+    }
+
+    table{
+        page-break-inside: avoid;
+    }
+    td{
+        page-break-inside: avoid;
+    }
+
+/*
+    .col-sm-1,
+    .col-sm-2,
+    .col-sm-3,
+    .col-sm-4,
+    .col-sm-5,
+    .col-sm-6,
+    .col-sm-7,
+    .col-sm-8,
+    .col-sm-9,
+    .col-sm-10,
+    .col-sm-11,
+    .col-sm-12 {
+        float: none;
+        width: 100%;
+        display: block;
+    }*/
+
+    div{
+        display:block;
+    }
+    .container-fluid {
+        display: table;
+    }
+
+}

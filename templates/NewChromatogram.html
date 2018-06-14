@@ -1,0 +1,372 @@
+{% extends 'basetemplate.html' %}
+
+{% load javascriptfile %}
+{% load cssfile %}
+{% load fontfile %}
+
+{% block content %}
+    {% autoescape off %}
+        {% javascriptfile "/static/js/jquery-autocomplete.js" request.GET.export %}
+
+    {% endautoescape %}
+    <style>
+        .autocomplete-suggestions {
+            border: 1px solid #999;
+            background: #FFF;
+            overflow: auto;
+        }
+
+        .autocomplete-suggestion {
+            padding: 2px 5px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .autocomplete-selected {
+            background: #F0F0F0;
+        }
+
+        .autocomplete-suggestions strong {
+            font-weight: normal;
+            color: #3399FF;
+        }
+
+        .autocomplete-group {
+            padding: 2px 5px;
+        }
+
+        .autocomplete-group strong {
+            display: block;
+            border-bottom: 1px solid #000;
+        }
+    </style>
+    <div class="container-fluid">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <h1>New Chromatogram</h1>
+            <form action="{% url 'NewChromatogramSave' %}" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="HPLCSampleName">Sample Name:</label>
+                    <input type="text" class="form-control" id="HPLCSampleName" name="HPLCSampleName"
+                           value="{{ LatestChrom.Sample }}"
+                           placeholder="e.g. Tubercidin">
+                </div>
+                <div class="form-group">
+                    <label for="HPLCColumn">Column:</label>
+                    <input type="text" class="form-control" id="HPLCColumn" name="HPLCColumn"
+                           value="{{ LatestChrom.Column }}"
+                           placeholder="e.g. Kromasil RP C18 - 5µ">
+                </div>
+                <div class="form-group">
+                    <label for="HPLCFlow">Flow (ml/min):</label>
+                    <input type="text" class="form-control" id="HPLCFlow" name="HPLCFlow"
+                           value="{{ LatestChrom.Flow }}"
+                           placeholder="1.5">
+                </div>
+                <div class="form-group">
+                    <label for="HPLCInjectionVolume">Injection Volume (µl):</label>
+                    <input type="text" class="form-control" id="HPLCInjectionVolume"
+                           value="{{ LatestChrom.InjectionVolume }}"
+                           name="HPLCInjectionVolume"
+                           placeholder="e.g. 100">
+                </div>
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <div class="form-group">
+                        <label for="HPLCConcentration">Concentration</label>
+                        <input type="text" class="form-control" id="HPLCConcentration" name="HPLCConcentration"
+                               value="{{ LatestChrom.Concentration }}"
+                               placeholder="1">
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <div class="form-group">
+                    <label for="HPLCConcentrationUnit">Concentration Unit (e.g. mg/ml):</label>
+                    <input type="text" class="form-control" id="HPLCConcentrationUnit" name="HPLCConcentrationUnit"
+                           value="{{ LatestChrom.ConcentrationUnit }}"
+                           placeholder="1">
+                </div>
+                </div>
+            </div>
+                <div class="form-group">
+                    <label for="HPLCADCAcquisition">Acquire Counter Channel?:</label>
+                    <input type="checkbox" class="checkbox" id="HPLCADCAcquisition" name="HPLCADCAcquisition" checked>
+                </div>
+                <div class="form-group" id="uvwavelength">
+                    <label for="HPLCUVWaveLength">UV Wavelength (nm):</label>
+                    <input type="text" class="form-control" id="HPLCUVWaveLength"
+                           value="{{ LatestChrom.UVWavelength }}"
+                           name="HPLCUVWaveLength"
+                           placeholder="254">
+                </div>
+                <div class="form-group">
+                    <label for="HPLCMaxRuntime">Maximum time in minutes of data aquisition for this chromatogram (0 means no auto stop):</label>
+                    <input type="text" class="form-control" id="HPLCMaxRuntime" name="HPLCMaxRuntime"
+                           value="0"
+                           placeholder="Time in Minutes">
+                </div>
+                <div class="form-group">
+                    <label for="HPLCSampleRate">Sample Rate:</label>
+                    <input type="text" class="form-control" id="HPLCSampleRate" name="HPLCSampleRate"
+                           value="1"
+                           placeholder="in Hz">
+                </div>
+                <div class="form-group">
+                    <label for="HPLCComment">Comment / Additional Information:</label>
+                    <textarea class="form-control" id="HPLCComment" name="HPLCComment"
+                              placeholder="Put any additional information here that might be useful for you in the future">{{ LatestChrom.Comment }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="HPLCFactorsUnits">The Factors and Units for each Channel that is being recorded.<br/>Format: ChannelName - Factor - Unit</label>
+                    <textarea class="form-control" id="HPLCFactorsUnits" name="HPLCFactorsUnits"
+                              placeholder="UV - 0.001 - mAu
+Counter - 1 - CPS">{{ FactorsUnits }}</textarea>
+                </div>
+            <div class="form-group">
+                    <label for="HPLCChannelOrderShift">The order of the channels and the respective shift between a channel and the first channel. (in seconds)<br/>Format: ChannelName1 - Shift,ChannelName2 - Shift</label>
+                    <input type="text" class="form-control" id="HPLCChannelOrderShift" name="HPLCChannelOrderShift"
+                           value="UV - 0, Counter - 30"
+                           placeholder="in Hz">
+                </div>
+                <div class="form-group">
+                    <label for="HPLCRheodyneSwitch">Use Rheodyne switch?</label>
+                    <input type="checkbox" class="checkbox" id="HPLCRheodyneSwitch" name="HPLCRheodyneSwitch" {% if LatestChrom.RheodyneSwitch %}checked{% else %}{% endif %} }>
+                </div>
+                <div class="row" id="solvents">
+                    <div class="col-lg-3">
+                        <label>Eluent0</label>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group">
+                                    <input class="form-control" id="HPLCEluent0-0" name="HPLCEluent0-0"
+                                           placeholder="Solvent 0-0"
+                                           value="{{ solvents.0.0.Name }}">
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group">
+                                    <input class="form-control" id="HPLCEluent0-C-0" name="HPLCEluent0-C-0"
+                                           placeholder="ψ 0-0"
+                                           value="{{ solvents.0.0.Percentage }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group">
+                                    <input class="form-control" id="HPLCEluent0-1" name="HPLCEluent0-1"
+                                           placeholder="Solvent 0-1"
+                                           value="{{ solvents.0.1.Name }}">
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group">
+                                    <input class="form-control" id="HPLCEluent0-C-1" name="HPLCEluent0-C-1"
+                                           placeholder="ψ 0-1"
+                                    value="{{ solvents.0.1.Percentage }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group">
+                                    <input class="form-control" id="HPLCEluent0-2" name="HPLCEluent0-2"
+                                           placeholder="Solvent 0-2"
+                                           value="{{ solvents.0.2.Name }}">
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group">
+                                    <input class="form-control" id="HPLCEluent0-C-2" name="HPLCEluent0-C-2"
+                                           placeholder="ψ 0-2"
+                                    value="{{ solvents.0.2.Percentage }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group">
+                                    <input class="form-control"
+                                           id="HPLCEluent0-3"
+                                           name="HPLCEluent0-3"
+                                           value="{{ solvents.0.3.Name }}"
+                                           placeholder="Solvent 0-3">
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent0-C-3"
+                                                               value="{{ solvents.0.3.Percentage }}"
+                                                               name="HPLCEluent0-C-3" placeholder="ψ 0-3"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3" style="display:none"><label>Eluent1</label>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent1-0"
+                                                               value="{{ solvents.1.0.Name }}"
+                                                               name="HPLCEluent1-0" placeholder="Solvent 1-0"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent1-C-0"
+                                                               value="{{ solvents.1.0.Percentage }}"
+                                                               name="HPLCEluent1-C-0" placeholder="ψ 1-0"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent1-1"
+                                                               value="{{ solvents.1.1.Name }}"
+                                                               name="HPLCEluent1-1" placeholder="Solvent 1-1"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent1-C-1"
+                                                               value="{{ solvents.1.1.Percentage }}"
+                                                               name="HPLCEluent1-C-1" placeholder="ψ 1-1"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent1-2"
+                                                               value="{{ solvents.1.2.Name }}"
+                                                               name="HPLCEluent1-2" placeholder="Solvent 1-2"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent1-C-2"
+                                                               value="{{ solvents.1.2.Percentage }}"
+                                                               name="HPLCEluent1-C-2" placeholder="ψ 1-2"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent1-3"
+                                                               value="{{ solvents.1.3.Name }}"
+                                                               name="HPLCEluent1-3" placeholder="Solvent 1-3"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent1-C-3"
+                                                               value="{{ solvents.1.3.Percentage }}"
+                                                               name="HPLCEluent1-C-3" placeholder="ψ 1-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3" style="display:none"><label>Eluent2</label>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent2-0"
+                                                               value="{{ solvents.2.0.Name }}"
+                                                               name="HPLCEluent2-0" placeholder="Solvent 2-0"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent2-C-0"
+                                                               value="{{ solvents.2.0.Percentage }}"
+                                                               name="HPLCEluent2-C-0" placeholder="ψ 2-0"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent2-1"
+                                                               value="{{ solvents.2.1.Name }}"
+                                                               name="HPLCEluent2-1" placeholder="Solvent 2-1"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent2-C-1"
+                                                               value="{{ solvents.2.1.Percentage }}"
+                                                               name="HPLCEluent2-C-1" placeholder="ψ 2-1"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent2-2"
+                                                               value="{{ solvents.2.2.Name }}"
+                                                               name="HPLCEluent2-2" placeholder="Solvent 2-2"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent2-C-2"
+                                                               value="{{ solvents.2.2.Percentage }}"
+                                                               name="HPLCEluent2-C-2" placeholder="ψ 2-2"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent2-3"
+                                                               value="{{ solvents.2.3.Name }}"
+                                                               name="HPLCEluent2-3" placeholder="Solvent 2-3"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent2-C-3"
+                                                               value="{{ solvents.2.3.Percentage }}"
+                                                               name="HPLCEluent2-C-3" placeholder="ψ 2-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3" style="display:none"><label>Eluent3</label>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent3-0"
+                                                               value="{{ solvents.3.0.Name }}"
+                                                               name="HPLCEluent3-0" placeholder="Solvent 3-0"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent3-C-0"
+                                                               value="{{ solvents.3.0.Percentage }}"
+                                                               name="HPLCEluent3-C-0" placeholder="ψ 3-0"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent3-1"
+                                                               value="{{ solvents.3.1.Name }}"
+                                                               name="HPLCEluent3-1" placeholder="Solvent 3-1"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent3-C-1"
+                                                               value="{{ solvents.3.1.Percentage }}"
+                                                               name="HPLCEluent3-C-1" placeholder="ψ 3-1"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent3-2"
+                                                               value="{{ solvents.3.2.Name }}"
+                                                               name="HPLCEluent3-2" placeholder="Solvent 3-2"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent3-C-2"
+                                                               value="{{ solvents.3.2.Percentage }}"
+                                                               name="HPLCEluent3-C-2" placeholder="ψ 3-2"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-sm-9 col-md-9">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent3-3"
+                                                               value="{{ solvents.3.3.Name }}"
+                                                               name="HPLCEluent3-3" placeholder="Solvent 3-3"></div>
+                            </div>
+                            <div class="col-lg-3 col-sm-3 col-md-3">
+                                <div class="form-group"><input class="form-control" id="HPLCEluent3-C-3"
+                                                               value="{{ solvents.3.3.Percentage }}"
+                                                               name="HPLCEluent3-C-3" placeholder="ψ 3-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Speichern</button>
+            </form>
+
+
+        </div><!-- /.container -->
+    </div>
+    <script>
+        $(document).ready(function () {
+
+
+            $('#HPLCColumn').autocomplete({
+                serviceUrl: '/api/getColumns',
+                minChars:0
+            });
+
+        });
+    </script>
+{% endblock %}

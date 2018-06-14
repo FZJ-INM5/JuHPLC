@@ -1,0 +1,32 @@
+this is a working graphql query to get all hplc data
+
+{
+  data:allChromatograms(id:"Q2hyb21hdG9ncmFtVHlwZTox"){
+    edges  {
+      node{
+        id,
+        Datetime,
+        ADC:hplcdata(ChannelName:"ADC") {
+          edges {
+            node {
+              id,
+              Datetime,
+              ChannelName,
+              Value
+            }
+          }
+        }
+        UV:hplcdata(ChannelName:"UV") {
+          edges {
+            node {
+              id,
+              Datetime,
+              ChannelName,
+              Value
+            }
+          }
+        }
+      }
+    }
+  }
+}

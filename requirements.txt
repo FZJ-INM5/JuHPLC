@@ -1,0 +1,5 @@
+pyserial>=3.2.1
+django>=1.11b1
+jsonpickle==0.9.4
+django_compressor
+csscompressor

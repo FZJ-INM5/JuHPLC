@@ -1,0 +1,11 @@
+{% extends 'basetemplate.html' %}
+
+{% block content %}
+    <div class="container">
+        <h1>New Chromatogram Save</h1>
+        <p>Sample Name:{{ chromatogram.Sample }}</p>
+        <p>
+            {{ request.POST }}
+        </p>
+    </div><!-- /.container -->
+{% endblock %}

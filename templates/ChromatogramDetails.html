@@ -1,0 +1,947 @@
+{% extends 'basetemplate.html' %}
+{% load javascriptfile %}
+{% load cssfile %}
+{% load fontfile %}
+{% load compress %}
+
+
+{% block content %}
+    <script>
+        window.chromatogram = {{ jsonChromatogram|safe }};
+    </script>
+    {% compress css inline %}
+        <link rel="stylesheet" href="/static/css/dygraphs-2.1.0.css" type="text/css" charset="utf-8"/>
+        <link rel="stylesheet" href="/static/css/offcanvas.css" type="text/css" charset="utf-8"/>
+        <link rel="stylesheet" href="/static/css/fa-svg-with-js.css" type="text/css" charset="utf-8"/>
+    {% endcompress %}
+    {% autoescape off %}
+        {% javascriptfile "/static/js/ml-savitzky-golay-browserified.min.js" request.GET.export %}
+    {% endautoescape %}
+    {% compress js inline %}
+
+        <script src="/static/js/vue.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Vue-Components/dygraphs-graph.js" type="text/javascript"
+                charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Vue-Components/chromatogram-infocard.js" type="text/javascript"
+                charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Vue-Components/peak-table.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="/static/js/jscolor.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/cookies.js" type="text/javascript" charset="utf-8"></script>
+        <!--<script src="/static/js/fontawesome-all.js" type="text/javascript" charset="utf-8"></script>-->
+        <script src="/static/js/feather.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/math.min.js" type="text/javascript" charset="utf-8"></script>
+        
+        <script src="/static/js/penalized-least-squares.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="/static/js/dygraphs-2.1.0.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/dygraphs-synchronizer.min.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="/static/js/graphcolors.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Baseline.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Peak.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/JuHPLC.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/JuHPLC-Helpers.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="/static/js/tensorflow.js" type="text/javascript" charset="utf-8"></script>
+    {% endcompress %}
+    <div id="app">
+        <nav class="hidden-print navbar navbar-light navbar-expand-md fixed-top" style="background-color:white;">
+            <button class="navbar-toggler navbar-toggler-right d-print-none" type="button" data-toggle="collapse"
+                    data-target="#navbar1">
+                <span class="d-print-none navbar-toggler-icon"></span>
+            </button>
+            <a href="/" class="navbar-brand">Menu</a>
+            <div class="navbar-collapse collapse" id="navbar1">
+                <ul class="navbar-nav">
+                <span class="nav-link" href="#" id="saveBtn" data-toggle="tooltip" data-placement="bottom"
+                      title="Saves the changes made on the Server. (Ctrl+S)">
+                    <i style="width: 22px;height: 22px;" data-feather="save"></i> Save
+                </span>
+                    <span class="nav-link" href="#" id="deletePeaksBtn" data-toggle="tooltip" data-placement="bottom"
+                          title="Deletes all Peaks">
+                    <i style="width: 22px;height: 22px;" data-feather="trash-2"></i> Delete Peaks
+                </span>
+                    <span class="nav-link" href="#" id="findPeaksModalOpen" data-toggle="modal"
+                          data-placement="bottom"
+                          data-target="#findPeaksModal"
+                          onclick="$('#findPeaksModalMinWidth')[0].valueAsNumber=0;minArea=$('#findPeaksModalMinArea')[0].valueAsNumber=0;$('#findPeaksModalMinHeight')[0].valueAsNumber=0;"
+                          title="Find Peaks matching the required Conditions on the specified Graph. (Ctrl+F)">
+                    <i data-feather="search" style="width: 22px;height: 22px;"></i> Find Peaks
+                </span>
+
+                    <span class="nav-link" href="#" id="scaleYBtn" data-toggle="tooltip" data-placement="bottom"
+                          title="Scale Y-Axis (Ctrl+Y)">
+                    <i style="width: 22px;height: 22px;transform:rotate(-45deg)" data-feather="maximize-2"></i> Scale Y-Axis
+                </span>
+                    <span class="nav-link" href="#" id="scaleXBtn" data-toggle="tooltip" data-placement="bottom"
+                          title="Scale X-Axis (Ctrl+X)">
+                    <i style="width: 22px;height: 22px;transform:rotate(45deg)" data-feather="maximize-2"></i> Scale X-Axis
+                </span>
+                    <button class="nav-link btn btn-sm hplc-btn" v-bind:class="{'btn-info':editBaseline}"
+                            id="editBaselineBtn" data-toggle="tooltip" data-placement="bottom"
+                            title="Edit Baseline (Ctrl+B)" v-on:click="editBaseline=!editBaseline;">
+                        <i style="width: 22px;height: 22px;" data-feather="edit"></i> Edit Baseline
+                    </button>
+                    <button class="nav-link btn btn-sm hplc-btn" v-bind:class="{'btn-info':editDeadTime}"
+                            id="deadtimeselection" data-toggle="tooltip"
+                            data-placement="bottom"
+                            title="Enables the Deadtime Selection on the Graphs. Click anywhere to move the Deadtime to that point."
+                            v-on:click="editDeadTime=!editDeadTime;">
+                        <i style="width: 22px;height: 22px;" data-feather="crosshair"></i> Deadtime Selection
+                    </button>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown"
+                           aria-haspopup="true" aria-expanded="false">
+                            <i data-feather="download" style="width: 22px;height: 22px;"></i>Download</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdown01">
+                            <a class="dropdown-item"
+                               id="downloadBtn"
+                               href="#"
+                               data-toggle="tooltip"
+                               data-placement="right"
+                               title="Downloads the current Chromatogram as an CSV file to be used in any other software">
+                                CSV
+                            </a>
+                            <a class="dropdown-item"
+                               id="downloadBtnJson"
+                               href="#"
+                               data-toggle="tooltip"
+                               data-placement="right"
+                               title="Downloads the underlying Data as json Object.">
+                                Json
+                            </a>
+                            <a class="dropdown-item"
+                               id="downloadBtnPeaksimple"
+                               href="#"
+                               data-toggle="tooltip"
+                               data-placement="right"
+                               title="Downloads the current Chromatogram as Peaksimple-compatible .asc files">
+                                Peaksimple
+                            </a>
+                            <a class="dropdown-item"
+                               id="exportBtn"
+                               href="?export=true"
+                               download data-toggle="tooltip"
+                               data-placement="right"
+                               title="Downloads the current Chromatogram as an HTML file that can be sent via mail">
+                                HTML Export
+                            </a>
+                            <a class="dropdown-item"
+                               id="exportBtn"
+                               href="/Chromatogram/{{ chromatogram.id }}/PDFDownload?print=true"
+                               download data-toggle="tooltip"
+                               data-placement="right"
+                               title="Downloads the current Chromatogram as PDF File">
+                                PDF Report
+                            </a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="dropdown02" data-toggle="dropdown"
+                           aria-haspopup="true" aria-expanded="false">
+                            <i data-feather="more-vertical" style="width: 22px;height: 22px;"></i>More</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdown02">
+                <span class="nav-link" href="#" id="viewSwitch" style="float:right;" data-toggle="tooltip"
+                      data-placement="bottom" title="View-Switch">
+                    <i style="width: 22px;height: 22px;" data-feather="more-vertical" id="viewSwitchIcon"></i> View-Switch
+                </span>
+                            <span class="nav-link" href="#" id="optionsBtn" style="float:right;" data-toggle="tooltip"
+                                  data-placement="bottom" title="Options+">
+                    <i style="width: 22px;height: 22px;" data-feather="settings" id="optionsBtnIcon"></i> Options
+                </span>
+                            <span class="nav-link"><input type="checkbox" id="syncGraphsCheckbox">Sync Graphs</span>
+                            <span class="nav-link btn btn-sm hplc-btn"><input type="file" id="fileInput"/></span>
+                        </div>
+                    </li>
+                </ul>
+
+            </div>
+        </nav>
+
+        <div class="container-fluid" style="line-height:1.0; top:10px;">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12">
+                    <h3>Chromatogram Details - {{ num }}</h3>
+                </div>
+            </div>
+            {% if request.GET.reload %}
+                {% if rheodyneSwitch %}
+                    <h1>Please wait 10 Seconds and inject the sample</h1>
+                {% else %}
+                    <h1>Please wait while initializing the connection...</h1>
+                {% endif %}
+                <script>
+                    setTimeout(reloadOnData, 100);
+                </script>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                            <chromatogram-infocard :chromatogram="chromatogram" graphname="UV"></chromatogram-infocard>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                            <div class="card">
+                                <div class="card-header">Comment</div>
+                                <div class="card-block">
+                                <textarea id="comment"
+                                          style="width:100%;height:140px" v-model="chromatogram.Comment"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+                    {% if not isrunning and not data or isrunning %}
+                        <div class="row">
+                            <div class="card w-100">
+                                <div class="card-header"><h5>Controls</h5></div>
+                                <div class="card-block">
+                                    <div class="col-lg-8 col-md-8 col-sm-8">
+                                        {% if islocalhost %}
+                                            {% if not isrunning and not data %}
+                                                <form class="form-inline" action="{% url 'NewChromatogramStart' %}"
+                                                      method="POST">
+                                                    {% csrf_token %}
+                                                    <div class="form-group">
+                                                        <label for="exampleSelect1">Select Port</label>
+                                                        <select class="form-control" id="portname" name="portname">
+                                                            {% for port in ports %}
+                                                                <option>{{ port }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <input type="hidden" name="id" value="{{ num }}"/>
+
+                                                    <button id="startBtn" type="submit" class="btn btn-success"
+                                                            data-toggle="tooltip" data-placement="bottom"
+                                                            title="Starts data aquisition with the selected device. (F4)">
+                                                        Start
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+
+                                            {% if isrunning %}
+                                                <form class="form-inline" action="{% url 'NewChromatogramStop' %}"
+                                                      method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="id" value="{{ num }}"/>
+
+                                                    <button type="submit" class="btn btn-danger">Stop</button>
+                                                </form>
+
+                                            {% else %}
+
+                                                <form class="form-inline"
+                                                      action="{% url 'ChromatogramImportDo' chromatogramid=chromatogram.id %}"
+                                                      enctype="multipart/form-data"
+                                                      method="POST">
+                                                    {% csrf_token %}
+                                                    <div class="form-group">
+                                                        <label for="csvFile">Select File</label>
+                                                        <input type="file" class="form-control" id="csvFile"
+                                                               name="csvFile">
+                                                        </input>
+                                                    </div>
+                                                    <input type="hidden" name="id" value="{{ num }}"/>
+                                                    <button type="submit" class="btn btn-success">Import</button>
+                                                </form>
+
+                                            {% endif %}
+                                        {% endif %}
+
+                                    </div>
+                                    <div class="col-md-2 col-lg-2 col-sm-2">
+                                        {% if isrunning %}
+                                            Auto Refresh: <input type="checkbox" id="refreshCheckbox"/>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="row">
+                        {% for e in eluents %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                                <div class="card">
+                                    <div class="card-header">Eluent{{ e.id }}</div>
+                                    <div class="card-block">
+                                        {% for s in solvents %}
+                                            {% if s.Eluent == e %}
+                                                {{ s.Name }} - {{ s.Percentage }}<br/>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="marker"></div>
+                <div v-for="(name,idx) in chromatogram.ChannelOrderShift.split(',').map((x)=>{return {name:x.split(' - ')[0].trim(),value:x.split(' - ')[1].trim()};}).filter((x) => chromatogram.Data.Data[x.name] !== undefined ).filter((x) => (chromatogram.Data.Data[x.name][0].length > x.value*chromatogram.SampleRate)).map((x)=>x.name)"
+                     class="col-lg-12 juhplcGraphAndTable">
+                    <div style="page-break-before:auto;"></div>
+                    <div style="page-break-inside: avoid;">
+                        <dygraphs-graph :chromatogram="chromatogram" :graphname="name"
+                                        :key="name+idx+'graph'"></dygraphs-graph>
+                        <peak-table :peaks="chromatogram.Data.Peaks" :chromatogram="chromatogram" :graphname="name"
+                                    :key="name+idx+'table'"></peak-table>
+                    </div>
+                    <div style="page-break-after:always;"></div>
+                </div>
+            </div>
+        </div>
+<div id="fii"></div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="findPeaksModal" tabindex="-1" role="dialog" aria-labelledby="findPeaksModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="findPeaksModalLabel">Find Peaks</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <select id="findPeaksModalTargetGraphName">
+                        </select><br/>
+
+                        Min. Peak Width:<input type="number" id="findPeaksModalMinWidth"/><br/>
+                        Min. Peak Area:<input type="number" id="findPeaksModalMinArea"/><br/>
+                        Min. Peak Height:<input type="number" id="findPeaksModalMinHeight"/>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="findPeaksModalDoFind">Find Peaks</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="viewOptionsModal" tabindex="-1" role="dialog"
+             aria-labelledby="viewOptionsModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewOptionsModalLabel">Options</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="viewOptionsModalBody">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="viewOptionsModalSave">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{ mods }}
+    </div>
+
+
+    {% compress js inline %}
+        <script>
+
+            function init() {
+                window.lastUpdateTime = 0;
+
+                window.juhplc = new JuHPLC(window.chromatogram);
+
+
+                $('#refreshCheckbox').change(function () {
+                    if (this.checked) {
+                        window.refreshTimeout = setTimeout(update, 1000);
+                    } else {
+                        if (window.refreshTimeout != null) {
+                            clearTimeout(window.refreshTimeout);
+                        }
+                    }
+                });
+
+                if ($('#refreshCheckbox').checked) {
+                    window.refreshTimeout = setTimeout(update, 1000);
+                } else {
+                    if (window.refreshTimeout != null) {
+                        clearTimeout(window.refreshTimeout);
+                    }
+                }
+
+                {% if request.GET.autorefresh %}
+                    setTimeout(function () {
+                        $('#refreshCheckbox').prop("checked", true);
+                        window.refreshTimeout = setTimeout(update, 200);
+                        $('html, body').animate({scrollTop: $('.marker').offset().top - 112}, 1000);
+                    }, 500);
+                {% endif %}
+
+
+
+
+            }
+
+
+            function update() {
+                $(document).ready(function () {
+                    $.ajax({
+                        type: "GET",
+                        url: "/api/HplcData/{{ num }}/" + window.lastUpdateTime,
+                        dataType: "json",
+                        success: function (data) {
+
+                            console.log("update():", data);
+
+                            if (Object.keys(data).includes('NextChromatogram')) {
+                                console.log("Navigating to:" + "/ChromatogramDetails/" + data.NextChromatogram + "?autorefresh=true");
+                                clearTimeout(window.refreshTimeout);
+
+                                setTimeout(() => {
+                                    window.location.href = "/ChromatogramDetails/" + data.NextChromatogram + "?autorefresh=true";
+                                }, 2000);
+                            }
+
+                            //todo: logic + prettify
+                            for (var i in data.hplcdata) {
+                                if (window.chromatogram.Data.Data[i] === undefined) {
+                                    Vue.set(window.chromatogram.Data.Data, i, []);
+                                }
+
+                                var newData = [];
+                                if (window.lastUpdateTime === undefined || window.lastUpdateTime == null || window.lastUpdateTime == 0) {
+                                    //get all data via ajax request here and replace it, afterwards, we will append it
+                                    newData = data.hplcdata[i].map((x) => parseFloat(x.Value));
+                                } else {
+                                    //append the new data
+                                    newData = window.chromatogram.Data.Data[i][0].concat(data.hplcdata[i].map((x) => parseFloat(x.Value)));
+                                }
+                                Vue.set(window.chromatogram.Data.Data[i], 0, newData);
+
+                            }
+
+
+                            for (var i in data.hplcdata) {
+                                if (data.hplcdata[i].length > 0) {
+                                    window.lastUpdateTime = data.hplcdata[i][data.hplcdata[i].length - 1].Datetime;
+                                    break;
+                                }
+                            }
+
+                            setColorsFromCookies();
+
+                            window.refreshTimeout = setTimeout(update, 1000 / window.chromatogram.SampleRate);
+                        },
+                        error: function () {
+                            window.refreshTimeout = setTimeout(update, 100);
+                        }
+                    });
+                });
+            }
+
+
+            function initControls() {
+
+                $('#viewSwitch').click(function (abc) {
+                    var target = $('.juhplcGraphAndTable');
+                    if (target.hasClass('col-lg-6')) {
+                        target.removeClass('col-lg-6').addClass('col-lg-12');
+                        $('#viewSwitchIcon')
+                            .removeClass('fas fa-bars')
+                            .addClass('fas fa-columns');
+                        $('html, body').animate({scrollTop: $('.juhplcGraphAndTable').offset().top - 112}, 1000);
+                    } else {
+                        target.removeClass('col-lg-12').addClass('col-lg-6');
+                        $('#viewSwitchIcon')
+                            .removeClass('fas fa-columns')
+                            .addClass('fas fa-bars');
+                    }
+                    //window.juhplc.juhplcdygraphs.resizeGraphs();
+                    window.app.$eventHub.$emit('resizeGraphs');
+                }).tooltip();
+
+                $('#syncGraphsCheckbox').click(function (abc) {
+                    setTimeout(function () {
+                        window.syncGraphs();
+                    }, 150);
+                });
+
+                $('#findPeaksModalOpen').click(function (abx) {
+                    $('#findPeaksModalTargetGraphName').empty();
+                    for (var i in window.chromatogram.Data.Data) {
+                        $("<option />", {
+                            val: i,
+                            text: i
+                        }).appendTo('#findPeaksModalTargetGraphName');
+                    }
+                }).tooltip();
+
+                $('#deadtimeselection').tooltip();
+
+                try {
+                    $('#startBtn').tooltip();
+                } catch (err) {
+                }
+
+                $('#scaleYBtn').click(function () {
+                    window.juhplc.scaleGraphY();
+                }).tooltip();
+
+                $('#scaleXBtn').click(function () {
+                    window.juhplc.scaleGraphX();
+                }).tooltip();
+
+                $('#editBaselineBtn').tooltip();
+
+                $('#findPeaksModalDoFind').click(function () {
+                    var graphName = $("#findPeaksModalTargetGraphName").val();
+                    var minWidth = $('#findPeaksModalMinWidth')[0].valueAsNumber;
+                    var minArea = $('#findPeaksModalMinArea')[0].valueAsNumber;
+                    var minHeight = $('#findPeaksModalMinHeight')[0].valueAsNumber;
+
+
+                    var result = new SavitzkyGolayPeakFinding(window.chromatogram.Data.Data[graphName][0], graphName).findPeaks(window.chromatogram.DeadTime)
+                        .filter(function (a) {
+                            return a.EndTime - a.StartTime > minWidth;
+                        })
+                        .filter(function (a, b) {
+                            var p = new SavitzkyGolayPeak(window.chromatogram.Data.Data[graphName], a.StartTime, a.EndTime, graphName, window.chromatogram);
+                            return p.calculatePeakArea() > minArea;
+                        })
+                        .filter(function (a) {
+                            return new SavitzkyGolayPeak(window.chromatogram.Data.Data[graphName], a.StartTime, a.EndTime, graphName, window.chromatogram).getPeakMaximum().val > minHeight;
+                        });
+
+                    Vue.set(window.chromatogram.Data.Peaks, graphName, result);
+                    $('#findPeaksModal').modal('hide');
+                });
+
+                function saveDeadTimeOnServer() {
+                    $.ajax({
+                        type: "GET",
+                        url: "/api/Chromatogram/{{ chromatogram.id }}/SetDeadTime/" + chromatogram.DeadTime,
+                        success: function (data) {
+
+                        },
+                        error: function () {
+                            alert("Failed to Save data on the server, your changes have only been applied locally");
+                        }
+                    });
+                }
+
+                $('#saveBtn').click(function (abx) {
+                    savePeaksOnServer();
+                    saveComment();
+                    saveBaselineOnServer();
+                    saveDeadTimeOnServer();
+                }).tooltip();
+
+                $('#downloadBtn').click(function (abx) {
+                    let last = "";
+                    let tmp = "Time,";
+                    for (let i in window.chromatogram.Data.Data) {
+                        last = i;
+                    }
+                    tmp += Object.keys(window.chromatogram.Data.Data).join(',') + "\r\n";
+
+                    for (var c = 0; c < window.chromatogram.Data.Data[last][0].length; c++) {
+                        tmp += (c / 60.0).toFixed(4);
+                        for (var j in window.chromatogram.Data.Data) {
+                            tmp += "," + window.chromatogram.Data.Data[j][0][c];
+                        }
+                        tmp += "\r\n";
+                    }
+                    download("ChromatogramDetails-{{ chromatogram.id }}.csv", tmp);
+                }).tooltip();
+
+                $('#downloadBtnPeaksimple').click(function (abx) {
+                    let last = "";
+                    let tmp = "<TYPE>=CHROM\n" +
+                        "<RATE>=1HZ\n" +
+                        "<SIZE>=";
+                    for (let i in window.chromatogram.Data.Data) {
+                        last = i;
+                    }
+
+                    tmp += window.chromatogram.Data.Data[last][0].length + "\n";
+
+                    for (var channelname in window.chromatogram.Data.Data) {
+                        var tmp2 = "";
+                        for (var i = 0; i < window.chromatogram.Data.Data[channelname][0].length; i++) {
+                            tmp2 += Math.round(window.chromatogram.Data.Data[channelname][0][i] * 1000) + "\n";
+                        }
+                        download("ChromatogramDetails-{{ chromatogram.id }}-" + channelname + ".asc", tmp + tmp2);
+                    }
+
+
+                }).tooltip();
+
+                $('#exportBtn').tooltip();
+
+                $('#downloadBtnJson').click(function (abx) {
+                    download("ChromatogramDetails-{{ chromatogram.id }}.json", JSON.stringify(window.chromatogram));
+                }).tooltip();
+
+                $('#deletePeaksBtn').click(function (abx) {
+                    for (var key in window.chromatogram.Data.Peaks) {
+                        window.chromatogram.Data.Peaks[key] = [];
+                    }
+                }).tooltip();
+
+                $('#viewOptionsModal').on('shown.bs.modal', function () {
+                    var content = "";
+                    content += "<div>";
+                    content += "<h3>Colors:</h3>";
+                    for (var i in window.chromatogram.Data.Data) {
+                        content += i + "<input class='jscolor' id='color" + i + "'/><br/>";
+                    }
+
+                    content += "<h3>Baseline-Mode<h3/>";
+                    for (var i in window.chromatogram.Data.Data) {
+                        content += i + "<select id='baseline" + i + "'><option name='linear'>linear</option><option name='cubic-spline'>cubic-spline</option></select><br/>";
+                    }
+
+                    $('#viewOptionsModalBody').html(content);
+                    for (var i in window.chromatogram.Data.Data) {
+                        var picker = new jscolor('color' + i);
+                        try {
+                            picker.fromString(getColorFromCookie(i));
+                        } catch (err) {
+                            picker.fromString(window.juhplc.juhplcdygraphs.graphs[i].colors_[0]);
+                        }
+                        try {
+                            $('#baseline' + i).val(window.chromatogram.Data.Baseline[i].Type);
+                        } catch (err) {
+                        }
+                    }
+                });
+                $('#viewOptionsModalSave').click(function () {
+                    $('#viewOptionsModal').modal('hide');
+                    for (var i in window.chromatogram.Data.Data) {
+                        try {
+                            setCookieColor(i, "#" + $('#color' + i).val());
+                        } catch (err) {
+                            console.log(err);
+                        }
+                        try {
+                            window.chromatogram.Data.Baseline[i].Type = $('#baseline' + i).val();
+                        } catch (err) {
+                            console.log(err);
+                        }
+                    }
+                    setColorsFromCookies();
+                });
+
+                //keyboard shortcuts
+                try {
+
+                    window.addEventListener("keydown", function (data) {
+                        if (data.key == "F4") {
+                            $('#startBtn').click();
+                        } else {
+                            console.log(data);
+                        }
+                        if (data.key == "s" && data.ctrlKey == true && data.type == "keydown") {
+                            $('#saveBtn').click();
+                            data.preventDefault();
+                        }
+                        if (data.key == "f" && data.ctrlKey == true && data.type == "keydown") {
+                            $('#findPeaksModalOpen').click();
+                            data.preventDefault();
+                        }
+                        if (data.key == "x" && data.ctrlKey == true && data.type == "keydown") {
+                            $('#scaleXBtn').click();
+                            data.preventDefault();
+                        }
+                        if (data.key == "y" && data.ctrlKey == true && data.type == "keydown") {
+                            $('#scaleYBtn').click();
+                            data.preventDefault();
+                        }
+                        if (data.key == "b" && data.ctrlKey == true && data.type == "keydown") {
+                            $('#editBaselineBtn').click();
+                            data.preventDefault();
+                        }
+                    });
+
+                } catch (err) {
+                }
+                //end keyboard shortcuts
+                try {
+                    setColorsFromCookies();
+                } catch (err) {
+                }
+
+                $('#optionsBtn').click(function () {
+                    $('#viewOptionsModal').modal('show');
+                });
+
+            }
+
+
+            function syncGraphs() {
+                var shouldSync = $('#syncGraphsCheckbox')[0].checked;
+                if (window.sync !== null && window.sync !== undefined) {
+                    window.sync.detach();
+                    window.sync = null;
+                }
+
+                if (shouldSync) {
+                    window.sync = Dygraph.synchronize(window.app.$root.$children.filter((x) => x.$options.name === 'dygraphs-graph').map((x) => x.$data._graph), {
+                        "range": true,
+                        "selection": true,
+                        "zoom": true
+                    });
+                }
+            }
+
+
+            function initVue() {
+
+                Vue.prototype.$eventHub = new Vue(); // Global event bus
+
+                window.app = new Vue({
+                    delimiters: ['[[', ']]'],
+                    el: '#app',
+                    data: {
+                        chromatogram: window.chromatogram,
+                        editDeadTime: false,
+                        editBaseline: false
+                    }
+                });
+            }
+
+            document.onreadystatechange = function () {
+                console.log("ReadyState:" + document.readyState);
+                if (document.readyState === "complete") {
+                    console.log("Ready, Initializing!");
+                    initVue();
+                    init();
+                    initControls();
+                    initLocalFileLoader();
+                    feather.replace()
+                }
+            };
+
+            function initLocalFileLoader() {
+                var fileInput = document.getElementById('fileInput');
+                fileInput.addEventListener('change', function (e) {
+                    var file = fileInput.files[0];
+
+                    console.log(file);
+
+                    var reader = new FileReader();
+                    reader.onload = function (x) {
+                        if(file.name.endsWith(".json")) {
+
+                            console.log("loading local .json file");
+
+                            var fileContentsAsJSON = JSON.parse(x.target.result);
+
+                            //remove temporary data from current graohs and new ones
+                            delete window.chromatogram.tmp;
+                            delete fileContentsAsJSON.tmp;
+                            //end remove temporary data from current graphs and new ones
+
+                            for (var i in window.chromatogram) {
+                                Vue.set(window.chromatogram, i, fileContentsAsJSON[i]);
+                            }
+                        }
+
+                        if(file.name.endsWith(".asc")) {
+                            var fileContent = x.target.result;
+                            console.log("loading local peaksimple file");
+
+                            Vue.set(window.chromatogram,"ChannelOrderShift","UV - 0");
+
+                            //remove temporary data from current graohs and new ones
+                            delete window.chromatogram.tmp;
+                            for (var i in window.chromatogram.Data.Peaks){
+                                window.chromatogram.Data.Peaks[i]=[];
+                            }
+                            for (var i in window.chromatogram.Data.Data){
+                                window.chromatogram.Data.Data[i]=[];
+                            }
+                            for (var i in window.chromatogram.Data.Data){
+                                delete window.chromatogram.Data.Baseline[i];
+                            }
+                            //end remove temporary data from current graphs and new ones
+
+                            var lines = fileContent.split('\n');
+                            var sampleRate = parseInt(lines[1].split('=')[1].toUpperCase().split('HZ')[0]);
+                            console.log("read sample-rate ",sampleRate," from peaksimple file");
+
+                            var parsedData=
+                            lines.splice(3).map(x => parseInt(x)/1000);
+
+                            console.log(parsedData);
+
+                            Vue.set(window.chromatogram,"SampleRate",sampleRate);
+
+                            Vue.set(window.chromatogram.Data,"Data",{});
+                            Vue.set(window.chromatogram.Data.Data,"UV",[]);
+                            Vue.set(window.chromatogram.Data.Data["UV"],0,parsedData);
+
+                            app.$eventHub.$emit('resizeGraphs');
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+            }
+
+            //printing support in firefox
+            //TODO: not working as of now...
+            window.onbeforeprint = function () {
+                console.log("onbeforeprint");
+                app.$eventHub.$emit('resizeGraphs');
+            };
+            window.onafterprint = function () {
+                console.log("onafterprint");
+                app.$eventHub.$emit('resizeGraphs');
+            };
+
+
+            //printing support in webkit (chrome e.g.)
+            var mediaQueryList = window.matchMedia('print');
+            mediaQueryList.addListener(function (mql) {
+                console.log(mql);
+                app.$eventHub.$emit('resizeGraphs');
+            });
+
+
+            function setColorsFromCookies() {
+                var colors = getColorsFromCookie();
+                for (var i = 0; i < colors.length; i++) {
+                    app.$eventHub.$emit('setColor', colors[i]);
+                }
+            }
+
+            function reloadOnData() {
+                $(document).ready(function () {
+                    $.ajax({
+                        type: "GET",
+                        url: "/api/HplcData/{{ num }}/0",
+                        dataType: "json",
+                        success: function (data) {
+                            var hasData = false;
+                            for (var i in data.hplcdata) {
+                                if (data.hplcdata[i].length) {
+                                    hasData |= true;
+                                }
+                            }
+                            if (hasData) {
+                                location.href = '/ChromatogramDetails/{{ num }}?autorefresh=true';
+                            } else {
+                                setTimeout(reloadOnData, 100);
+                            }
+                        },
+                        error: function () {
+                            window.refreshTimeout = setTimeout(reloadOnData, 100);
+                        }
+                    });
+                });
+            }
+
+            function addPeak(graphName, start, end) {
+                $.ajax({
+                    url: '/Chromatogram/{{ num }}/AddPeak',
+                    type: 'POST',
+                    data: JSON.stringify({
+                        StartTime: start,
+                        EndTime: end,
+                        GraphName: graphName
+                    }),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    async: false,
+                    success: function (msg) {
+                        alert(msg);
+                    }
+                });
+            }
+
+            function savePeaksOnServer() {
+                $.ajax({
+                    url: '/Chromatogram/{{ num }}/OverwritePeaks',
+                    type: 'POST',
+                    data: JSON.stringify(window.chromatogram.Data.Peaks),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'html',
+                    async: false,
+                    success: function (msg) {
+                        $('#saveBtn').addClass('btn-success');
+                        setTimeout(function () {
+                            $('#saveBtn').removeClass('btn-success');
+                        }, 300);
+                    },
+                    error: function (msg) {
+                        $('#saveBtn').addClass('btn-danger');
+                        console.log("savePeaksOnServer error:");
+                        console.log(msg);
+                        alert(msg);
+                        setTimeout(function () {
+                            $('#saveBtn').removeClass('btn-danger');
+                        }, 300);
+                    }
+                });
+            }
+
+            function saveBaselineOnServer() {
+                $.ajax({
+                    url: '/Chromatogram/{{ num }}/OverwriteBaseline',
+                    type: 'POST',
+                    data: JSON.stringify(window.chromatogram.Data.Baseline),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'html',
+                    async: false,
+                    success: function (msg) {
+                        $('#saveBtn').addClass('btn-success');
+                        setTimeout(function () {
+                            $('#saveBtn').removeClass('btn-success');
+                        }, 300);
+                    },
+                    error: function (msg) {
+                        $('#saveBtn').addClass('btn-danger');
+                        console.log("saveBaselineOnServer error:");
+                        console.log(msg);
+                        alert(msg);
+                        setTimeout(function () {
+                            $('#saveBtn').removeClass('btn-danger');
+                        }, 300);
+                    }
+                });
+            }
+
+            function saveComment() {
+                var toSend = {};
+                toSend.Comment = $('#comment').val();
+                $.ajax({
+                    url: '/Chromatogram/{{ num }}/OverwriteComment',
+                    type: 'POST',
+                    data: JSON.stringify(toSend),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'html',
+                    async: false,
+                    success: function (msg) {
+                        $('#saveBtn').addClass('btn-success');
+                        setTimeout(function () {
+                            $('#saveBtn').removeClass('btn-success');
+                        }, 300);
+                    },
+                    error: function (msg) {
+                        $('#saveBtn').addClass('btn-danger');
+                        console.log("savePeaksOnServer error:");
+                        console.log(msg);
+                        alert(msg);
+                        setTimeout(function () {
+                            $('#saveBtn').removeClass('btn-danger');
+                        }, 300);
+                    }
+                });
+            }
+        </script>
+    {% endcompress %}
+{% endblock %}
