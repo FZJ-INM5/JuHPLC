@@ -135,4 +135,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'JuHPLC/static')
 STATIC_URL = '/static/'
 COMPRESS_ENABLED = True
 
-CHROMIUM_PATH = "D:\\chrome-win32\\chrome.exe"
+CHROMIUM_PATH = "chromium-browser"

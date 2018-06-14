@@ -1,0 +1,10 @@
+[Unit]
+Description=Unit for starting a basic Django app
+
+[Service]
+Restart=on-failure
+WorkingDirectory=/home/pi/JuHPLC/
+ExecStart=/usr/bin/python3 manage.py runserver 0.0.0.0:80
+
+[Install]
+WantedBy=multi-user.target
