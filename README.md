@@ -70,5 +70,5 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 This project is licensed under the TODO
 
 ## Acknowledgments
-
-
+* **Dr. Dirk Bier** - Initial project idea, hardware creation, first software implementations of the arduino code
+* **Dan Vanderkam** - For the dygraphs project, without which it would have been much more work
