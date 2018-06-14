@@ -1,3 +1,4 @@
 __pycache__/
 db.sqlite
 db.sqlite3
+*.pyc
