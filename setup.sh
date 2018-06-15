@@ -8,4 +8,3 @@ python3 manage.py migrate
 sudo cp juhplc.service /etc/systemd/system/juhplc.service
 sudo systemctl enable juhplc
 sudo systemctl start juhplc
-python3 manage.py createsuperuser
