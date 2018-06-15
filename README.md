@@ -16,7 +16,7 @@ Install a fresh raspbian onto the SD card you are gonna use and connect any netw
 The installation is as easy as running the setup script. This will download the current development version of the project along with all its dependencies.
 
 ```
-https://raw.githubusercontent.com/FZJ-INM5/JuHPLC/master/setup.sh | sudo bash
+curl https://raw.githubusercontent.com/FZJ-INM5/JuHPLC/master/setup.sh | sudo bash
 ```
 
 After this it is required to create a user account using
