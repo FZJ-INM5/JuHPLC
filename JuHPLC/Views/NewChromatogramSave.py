@@ -42,6 +42,7 @@ def NewChromatogramSave(request):
     chromatogram.ConcentrationUnit = request.POST.get("HPLCConcentrationUnit")
     chromatogram.SampleRate = request.POST.get("HPLCSampleRate")
     chromatogram.NextChromatogram = 0
+    chromatogram.HalfLife = request.POST.get("HPLCNuclideHalfLife")
 
     try:
         # we can use the deadtime of the last measurement, since most of the time this won't change while developing

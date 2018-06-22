@@ -389,6 +389,36 @@ class SavitzkyGolayPeak extends Peak {
 
     }
 
+    calculatePeakAreaDecayCorrected(halflifeInMinutes){
+        var hlSeconds = halflifeInMinutes*60;
+
+        var d = this.data[0];
+        var a = 0;
+        var factor = 1;
+        if(this.chromatogram.Data.Factors[this.graphName] !== undefined){
+           factor = this.chromatogram.Data.Factors[this.graphName];
+        }
+        if(typeof this.chromatogram.Data.Baseline[this.graphName] === 'undefined') {
+            var f = this.calculateLinearInterpolation(0);
+
+            for (var i = this.StartTime; i <= this.EndTime; i++) {
+                a += (Math.abs(d[i] - f(i)))*factor*Math.exp(Math.log(2)*i/hlSeconds);
+            }
+        }
+        else
+        {
+
+            var bl = new Baseline(this.chromatogram.Data.Baseline[this.graphName]);
+
+            for (var i = this.StartTime; i <= this.EndTime; i++) {
+                a += Math.abs(d[i] - bl.calculateAtPointX(i))*factor*Math.exp(Math.log(2)*i/hlSeconds);
+            }
+
+        }
+
+        return a;
+    }
+
     calculateLinearRegressionForPeak() {
         return this.calculateLinearInterpolation();
     }

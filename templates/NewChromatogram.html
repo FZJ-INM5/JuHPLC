@@ -70,27 +70,32 @@
                            name="HPLCInjectionVolume"
                            placeholder="e.g. 100">
                 </div>
-            <div class="row">
-                <div class="col-lg-6 col-md-6 col-sm-12">
-                    <div class="form-group">
-                        <label for="HPLCConcentration">Concentration</label>
-                        <input type="text" class="form-control" id="HPLCConcentration" name="HPLCConcentration"
-                               value="{{ LatestChrom.Concentration }}"
-                               placeholder="1">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="HPLCConcentration">Concentration</label>
+                            <input type="text" class="form-control" id="HPLCConcentration" name="HPLCConcentration"
+                                   value="{{ LatestChrom.Concentration }}"
+                                   placeholder="1">
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="HPLCConcentrationUnit">Concentration Unit (e.g. mg/ml):</label>
+                            <input type="text" class="form-control" id="HPLCConcentrationUnit"
+                                   name="HPLCConcentrationUnit"
+                                   value="{{ LatestChrom.ConcentrationUnit }}"
+                                   placeholder="1">
+                        </div>
                     </div>
                 </div>
-                <div class="col-lg-6 col-md-6 col-sm-12">
-                    <div class="form-group">
-                    <label for="HPLCConcentrationUnit">Concentration Unit (e.g. mg/ml):</label>
-                    <input type="text" class="form-control" id="HPLCConcentrationUnit" name="HPLCConcentrationUnit"
-                           value="{{ LatestChrom.ConcentrationUnit }}"
-                           placeholder="1">
-                </div>
-                </div>
-            </div>
                 <div class="form-group">
                     <label for="HPLCADCAcquisition">Acquire Counter Channel?:</label>
                     <input type="checkbox" class="checkbox" id="HPLCADCAcquisition" name="HPLCADCAcquisition" checked>
+                </div>
+                <div class="form-group">
+                    <label for="HPLCNuclideHalfLife">Half Life (in minutes):</label>
+                    <input type="textbox" id="HPLCNuclideHalfLife" name="HPLCNuclideHalfLife">
                 </div>
                 <div class="form-group" id="uvwavelength">
                     <label for="HPLCUVWaveLength">UV Wavelength (nm):</label>
@@ -100,7 +105,8 @@
                            placeholder="254">
                 </div>
                 <div class="form-group">
-                    <label for="HPLCMaxRuntime">Maximum time in minutes of data aquisition for this chromatogram (0 means no auto stop):</label>
+                    <label for="HPLCMaxRuntime">Maximum time in minutes of data aquisition for this chromatogram (0
+                        means no auto stop):</label>
                     <input type="text" class="form-control" id="HPLCMaxRuntime" name="HPLCMaxRuntime"
                            value="0"
                            placeholder="Time in Minutes">
@@ -117,20 +123,24 @@
                               placeholder="Put any additional information here that might be useful for you in the future">{{ LatestChrom.Comment }}</textarea>
                 </div>
                 <div class="form-group">
-                    <label for="HPLCFactorsUnits">The Factors and Units for each Channel that is being recorded.<br/>Format: ChannelName - Factor - Unit</label>
+                    <label for="HPLCFactorsUnits">The Factors and Units for each Channel that is being recorded.<br/>Format:
+                        ChannelName - Factor - Unit</label>
                     <textarea class="form-control" id="HPLCFactorsUnits" name="HPLCFactorsUnits"
                               placeholder="UV - 0.001 - mAu
 Counter - 1 - CPS">{{ FactorsUnits }}</textarea>
                 </div>
-            <div class="form-group">
-                    <label for="HPLCChannelOrderShift">The order of the channels and the respective shift between a channel and the first channel. (in seconds)<br/>Format: ChannelName1 - Shift,ChannelName2 - Shift</label>
+                <div class="form-group">
+                    <label for="HPLCChannelOrderShift">The order of the channels and the respective shift between a
+                        channel and the first channel. (in seconds)<br/>Format: ChannelName1 - Shift,ChannelName2 -
+                        Shift</label>
                     <input type="text" class="form-control" id="HPLCChannelOrderShift" name="HPLCChannelOrderShift"
                            value="UV - 0, Counter - 30"
                            placeholder="in Hz">
                 </div>
                 <div class="form-group">
                     <label for="HPLCRheodyneSwitch">Use Rheodyne switch?</label>
-                    <input type="checkbox" class="checkbox" id="HPLCRheodyneSwitch" name="HPLCRheodyneSwitch" {% if LatestChrom.RheodyneSwitch %}checked{% else %}{% endif %} }>
+                    <input type="checkbox" class="checkbox" id="HPLCRheodyneSwitch" name="HPLCRheodyneSwitch"
+                           {% if LatestChrom.RheodyneSwitch %}checked{% else %}{% endif %} }>
                 </div>
                 <div class="row" id="solvents">
                     <div class="col-lg-3">
@@ -163,7 +173,7 @@ Counter - 1 - CPS">{{ FactorsUnits }}</textarea>
                                 <div class="form-group">
                                     <input class="form-control" id="HPLCEluent0-C-1" name="HPLCEluent0-C-1"
                                            placeholder="ψ 0-1"
-                                    value="{{ solvents.0.1.Percentage }}">
+                                           value="{{ solvents.0.1.Percentage }}">
                                 </div>
                             </div>
                         </div>
@@ -179,7 +189,7 @@ Counter - 1 - CPS">{{ FactorsUnits }}</textarea>
                                 <div class="form-group">
                                     <input class="form-control" id="HPLCEluent0-C-2" name="HPLCEluent0-C-2"
                                            placeholder="ψ 0-2"
-                                    value="{{ solvents.0.2.Percentage }}">
+                                           value="{{ solvents.0.2.Percentage }}">
                                 </div>
                             </div>
                         </div>
@@ -364,7 +374,7 @@ Counter - 1 - CPS">{{ FactorsUnits }}</textarea>
 
             $('#HPLCColumn').autocomplete({
                 serviceUrl: '/api/getColumns',
-                minChars:0
+                minChars: 0
             });
 
         });

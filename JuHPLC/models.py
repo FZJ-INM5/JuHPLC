@@ -42,6 +42,7 @@ class Chromatogram(models.Model):
     RheodyneSwitch = models.BooleanField()
     SampleRate = models.IntegerField()
     NextChromatogram = models.IntegerField()
+    HalfLife = models.FloatField()
 
 
 class Eluent(models.Model):

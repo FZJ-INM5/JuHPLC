@@ -22,6 +22,7 @@ class JSONJuHPLCChromatogram:
         self.RheodyneSwitch = chrom.RheodyneSwitch
         self.ChannelOrderShift = chrom.ChannelOrderShift
         self.Column = chrom.Column
+        self.HalfLife = chrom.HalfLife
 
         self.Eluents = JSONJuHPLCEluent(Eluent.objects.filter(Chromatogram=chrom).all()).Solvents
 

@@ -11,7 +11,7 @@ Vue.component('peak-table', {
     '                <th>#</th>\n' +
     '                <th>Name</th>\n' +
     '                <th>t<sub>R</sub></th>\n' +
-    '                <th class=\'rtk\'>k\'</th>\n' +
+    '                <th>k\'</th>\n' +
     '                <th>Area</th>\n' +
     '                <th>Details</th>\n' +
     '                <th>Delete</th>\n' +
@@ -71,6 +71,9 @@ Vue.component('peak-table-row', {
         PeakArea: function () {
             return Math.round(this.$data._peak.calculatePeakArea(this.idx) * 100) / 100;
         },
+        PeakAreaDecayCorrected: function () {
+            return Math.round(this.$data._peak.calculatePeakAreaDecayCorrected(this.chromatogram.HalfLife) * 100) / 100;
+        },
         RetentionTime: function () {
             return Math.round(this.$data._peak.getPeakMaximumProjected().f_x / 60 * this.chromatogram.SampleRate * 100) / 100;
         },
@@ -107,8 +110,14 @@ Vue.component('peak-table-row', {
         },
         peakNameChanged:function(event){
             this.peak.Name=event.target.value;
+        },
+        PeakAreaRender(){
+            if(this.graphname === "Counter" && typeof(this.chromatogram.HalfLife) != undefined && this.chromatogram.HalfLife > 0){
+                return this.PeakArea+"("+this.PeakAreaDecayCorrected+")";
+            }else{
+                return this.PeakArea;
+            }
         }
-
     },
     render(h) {
         return h('tr', {
@@ -138,7 +147,7 @@ Vue.component('peak-table-row', {
                 })]),
                 h("td", this.RetentionTime),
                 h("td", this.RetentionFactor),
-                h("td", this.PeakArea),
+                h("td", this.PeakAreaRender()),
                 h("td", [h("button", {
                     attrs: {
                         type: "button",
