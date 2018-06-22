@@ -34,6 +34,18 @@ Currently none - Todo
 Use your favourite webbrowser and connect to the IP-address / name of the raspberry with it.
 To find out the ip, you can easily run the ``` ipconfig ``` command and look for eth0.
 
+## Updating
+Switch into the subfolder /home/pi/JuHPLC
+
+Run ```sudo systemctl stop juhplc``` to stop the service.
+
+Run ``` git pull ``` to download the latest sourcecode.
+
+Run ```python3 manage.py migrate``` to update the database.
+
+Start the service again with ```sudo systemctl start juhplc``` .
+
+
 ### Features
 * Data aquisition with our arduino-based interface
 * Integrating peaks
