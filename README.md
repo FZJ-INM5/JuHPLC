@@ -32,7 +32,7 @@ Currently none - Todo
 ## Usage
 
 Use your favourite webbrowser and connect to the IP-address / name of the raspberry with it.
-To find out the ip, you can easily run the ``` ipconfig ``` command and look for eth0.
+To find out the ip, you can easily run the ``` ifconfig ``` command and look for eth0.
 
 ## Updating
 Switch into the subfolder /home/pi/JuHPLC
