@@ -2,6 +2,8 @@
 
 This project allows using chromatography on imported files (csv) and data aquisition from a compatible hardware device.
 
+.. |Flat Badge| image:: https://readthedocs.org/projects/juhplc/badge/?version=latest&style=flat
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
@@ -33,6 +35,8 @@ Currently none - Todo
 
 Use your favourite webbrowser and connect to the IP-address / name of the raspberry with it.
 To find out the ip, you can easily run the ``` ifconfig ``` command and look for eth0.
+
+For more info check out the [documentation](https://juhplc.readthedocs.io/en/latest/).
 
 ## Updating
 Switch into the subfolder /home/pi/JuHPLC
