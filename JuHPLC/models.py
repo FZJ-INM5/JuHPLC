@@ -73,3 +73,17 @@ class Baseline(models.Model):
     ChannelName = models.TextField()
     DatetimeValue = models.TextField()
     Type = models.TextField()
+
+class Calibration(models.Model):
+    Name = models.TextField()
+    Chromatograms = models.ManyToManyField(Chromatogram)
+    Slope = models.FloatField()
+    YAxisIntercept = models.FloatField()
+    UVWaveLength = models.FloatField()
+    Channel = models.TextField()
+    Column = models.TextField()
+    Flow = models.FloatField()
+    RetentionFactor = models.FloatField()
+    RetentionFactorError = models.FloatField()
+    Eluent = models.TextField()
+    Unit = models.TextField()

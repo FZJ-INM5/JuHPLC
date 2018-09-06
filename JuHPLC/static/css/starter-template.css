@@ -1,13 +1,12 @@
 
-
 .starter-template {
     padding: 3rem 1.5rem;
     text-align: center;
 }
 
-    .card-block{
-        padding-left:1em;
-    }
+.card-block {
+    padding-left: 1em;
+}
 
 .hplc-btn {
     margin: 1px;
@@ -25,24 +24,30 @@
     height: 390px;
 }
 
-    .peakTable {
-        margin-top:25px;
-    }
+.peakTable {
+    margin-top: 25px;
+    overflow: auto;   /* Scrollbar is displayed as it's needed */
+
+}
+
+.peak-table-textbox{
+    max-width:100px;
+}
 
 @media screen {
     .peakTable {
         max-height: 300px;
         overflow-y: scroll;
-        overflow-x: hidden;
+        overflow-x: auto;
         -webkit-print-color-adjust: exact;
     }
 
     .dygraphsGraph {
-        height:320px;
+        height: 320px;
     }
 
     .dygraphsDiv {
-        height:320px;
+        height: 320px;
     }
 
 }
@@ -56,22 +61,20 @@
     }
 
     .juhplcPeakTable {
-        page-break-inside:avoid;
+        page-break-inside: avoid;
     }
 
-
-
-    #app{
+    #app {
 
     }
 
     .dygraphsDiv {
-        height:550px;
-        page-break-inside:avoid;
+        height: 550px;
+        page-break-inside: avoid;
     }
 
     .dygraphsGraph {
-        margin-bottom:100px;
+        margin-bottom: 100px;
     }
 
     .page-break {
@@ -89,38 +92,43 @@
         page-break-before: auto !important;
     }
 
-    .page-break-inside-avoid{
-        page-break-inside:avoid;
-    }
-
-    table{
-        page-break-inside: avoid;
-    }
-    td{
+    .page-break-inside-avoid {
         page-break-inside: avoid;
     }
 
-/*
-    .col-sm-1,
-    .col-sm-2,
-    .col-sm-3,
-    .col-sm-4,
-    .col-sm-5,
-    .col-sm-6,
-    .col-sm-7,
-    .col-sm-8,
-    .col-sm-9,
-    .col-sm-10,
-    .col-sm-11,
-    .col-sm-12 {
-        float: none;
-        width: 100%;
+    table {
+        page-break-inside: avoid;
+    }
+
+    td {
+        page-break-inside: avoid;
+    }
+
+    .hidden-print {
+        display: none !important;
+    }
+
+    /*
+        .col-sm-1,
+        .col-sm-2,
+        .col-sm-3,
+        .col-sm-4,
+        .col-sm-5,
+        .col-sm-6,
+        .col-sm-7,
+        .col-sm-8,
+        .col-sm-9,
+        .col-sm-10,
+        .col-sm-11,
+        .col-sm-12 {
+            float: none;
+            width: 100%;
+            display: block;
+        }*/
+    div {
         display: block;
-    }*/
-
-    div{
-        display:block;
     }
+
     .container-fluid {
         display: table;
     }

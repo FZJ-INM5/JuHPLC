@@ -57,7 +57,7 @@ Vue.component('dygraphs-graph', {
                 ctx.closePath();
                 ctx.fill();
             } else {
-                var tmp = g.toDomCoords(starttime, bl.calculateAtPointX(starttime)*this.chromatogram.Data.Factors[this.graphname]);
+                var tmp = g.toDomCoords(starttime, bl.calculateAtPointX(starttime) * this.chromatogram.Data.Factors[this.graphname]);
                 ctx.moveTo(tmp[0], tmp[1]);
                 var tmp = g.toDomCoords(starttime, g.rawData_[starttime][1]);
                 ctx.lineTo(tmp[0], tmp[1]);
@@ -66,10 +66,10 @@ Vue.component('dygraphs-graph', {
                     var tmp = g.toDomCoords(i, g.rawData_[i][1]);
                     ctx.lineTo(tmp[0], tmp[1]);
                 }
-                var tmp = g.toDomCoords(endtime, bl.calculateAtPointX(endtime)*this.chromatogram.Data.Factors[this.graphname]);
+                var tmp = g.toDomCoords(endtime, bl.calculateAtPointX(endtime) * this.chromatogram.Data.Factors[this.graphname]);
                 ctx.lineTo(tmp[0], tmp[1]);
                 for (var i = endtime; i >= starttime; i--) {
-                    var tmp = g.toDomCoords(i, bl.calculateAtPointX(i)*this.chromatogram.Data.Factors[this.graphname]);
+                    var tmp = g.toDomCoords(i, bl.calculateAtPointX(i) * this.chromatogram.Data.Factors[this.graphname]);
                     ctx.lineTo(tmp[0], tmp[1]);
                 }
                 ctx.closePath();
@@ -125,7 +125,7 @@ Vue.component('dygraphs-graph', {
                 ctx.closePath();
                 ctx.fill();
             } else {
-                var tmp = g.toDomCoords(starttime, bl.calculateAtPointX(starttime)*factor);
+                var tmp = g.toDomCoords(starttime, bl.calculateAtPointX(starttime) * factor);
                 ctx.moveTo(tmp[0], tmp[1]);
                 var tmp = g.toDomCoords(starttime, g.rawData_[starttime][1]);
                 ctx.lineTo(tmp[0], tmp[1]);
@@ -134,10 +134,10 @@ Vue.component('dygraphs-graph', {
                     var tmp = g.toDomCoords(i, g.rawData_[i][1]);
                     ctx.lineTo(tmp[0], tmp[1]);
                 }
-                var tmp = g.toDomCoords(endtime, bl.calculateAtPointX(endtime)*factor);
+                var tmp = g.toDomCoords(endtime, bl.calculateAtPointX(endtime) * factor);
                 ctx.lineTo(tmp[0], tmp[1]);
                 for (var i = endtime; i >= starttime; i--) {
-                    var tmp = g.toDomCoords(i, bl.calculateAtPointX(i)*factor);
+                    var tmp = g.toDomCoords(i, bl.calculateAtPointX(i) * factor);
                     ctx.lineTo(tmp[0], tmp[1]);
                 }
                 ctx.closePath();
@@ -212,7 +212,7 @@ Vue.component('dygraphs-graph', {
                     //console.log(i);
 
                     ctx.beginPath();
-                    var tmp = g.toDomCoords(data[0][i], data[1][i]*this.chromatogram.Data.Factors[this.graphname]);
+                    var tmp = g.toDomCoords(data[0][i], data[1][i] * this.chromatogram.Data.Factors[this.graphname]);
                     ctx.arc(tmp[0], tmp[1], 3, 0, 2 * Math.PI);
                     ctx.fillStyle = "black";
                     ctx.fill();
@@ -229,7 +229,7 @@ Vue.component('dygraphs-graph', {
             ctx.moveTo(tmp[0], tmp[1]);
 
             for (var i = 0; i < g.rawData_.length - 1; i++) {
-                tmp = g.toDomCoords(g.rawData_[i][0], bl.calculateAtPointX(g.rawData_[i][0])*this.chromatogram.Data.Factors[this.graphname]);
+                tmp = g.toDomCoords(g.rawData_[i][0], bl.calculateAtPointX(g.rawData_[i][0]) * this.chromatogram.Data.Factors[this.graphname]);
                 ctx.lineTo(tmp[0], tmp[1]);
             }
 
@@ -247,7 +247,7 @@ Vue.component('dygraphs-graph', {
             //for var i=0;i<c.Data.Peaks[graphname].length;i++ does NOT work. magic?
             for (var i in c.Data.Peaks[this.graphname]) {
                 var curr = c.Data.Peaks[this.graphname][i];
-                var x = new SavitzkyGolayPeak(c.Data.Data[this.graphname], curr.StartTime, curr.EndTime).getPeakMaximumProjected().f_x;
+                var x = new SavitzkyGolayPeak(c.Data.Data[this.graphname], curr.StartTime, curr.EndTime, this.graphname, this.chromatogram).getPeakMaximumProjected().f_x;
                 var shorttext = "";
 
                 if (curr.Name === undefined || curr.Name.length === 0 || curr.Name === "undefined") {
@@ -295,12 +295,12 @@ Vue.component('dygraphs-graph', {
             }
             graphOptions.file = transformDataToArray(this.chromatogram, this.graphname);
 
-            //setAnnotations has to be down here since it causes a refresh of the rendering
-            //todo: set this elsewhere e.g. in updateOptions, documentations doesn't cover this case
-
-            g.resize($($('.peakTable').children()[1]).width(),$('#dygraphs-graph' + this._uid).parent().height());
+            g.resize($('#dygraphs-graph' + this._uid).parent().width(), $('#dygraphs-graph' + this._uid).parent().height());
 
             $('#fii').innerHtml = $($('.peakTable').children()[1]).width();
+
+            //setAnnotations has to be down here since it causes a refresh of the rendering
+            //todo: set this elsewhere e.g. in updateOptions, documentations doesn't cover this case
 
             g.setAnnotations(annotations);
             g.updateOptions(graphOptions, false);
@@ -308,15 +308,21 @@ Vue.component('dygraphs-graph', {
 
         },
         _disableContextmenuOnRightclick: function () {
-            $('#dygraphs-graph' + this._uid ).contextmenu(function () {
+            $('#dygraphs-graph' + this._uid).contextmenu(function () {
                 return false;
             });
         },
-        zoomIntoPeak:function(peakid) {
+        zoomIntoPeak: function (peakid) {
             var p = this.chromatogram.Data.Peaks[this.graphname][peakid];
             var g = this.$data._graph;
 
-            g.updateOptions({dateWindow: [p.StartTime - 20*this.chromatogram.SampleRate, p.EndTime + 20*this.chromatogram.SampleRate]}, false);
+            g.updateOptions({dateWindow: [p.StartTime - 20 * this.chromatogram.SampleRate, p.EndTime + 20 * this.chromatogram.SampleRate]}, false);
+        },
+        highlightCallback: function (event, x, points, row, seriesName) {
+            app.$eventHub.$emit('setSelection', {x: x, series: this.graphname});
+        },
+        unhighlightCallback: function (event) {
+            app.$eventHub.$emit('clearSelection', {});
         }
     },
     mounted() {
@@ -402,30 +408,30 @@ Vue.component('dygraphs-graph', {
                 var mouseup = function mouseup(event) {
                     if (context.isZooming) {
                         if (context.dragEndX !== null) {
-                            if (event.button && event.button == 2 && !g.$rootData.editBaseline) {
-                                console.log("MMB ZOOM END");
-                                console.log(event);
-                                console.log(context);
+                            if (event.button == 2 && !g.$rootData.editBaseline) {
+
 
                                 var start = Math.round(g.toDataXCoord(context.dragStartX));
                                 var end = Math.round(g.toDataXCoord(context.dragEndX));
 
+                                //swap if integrating from right to left
                                 if (end < start) {
                                     end = Math.round(g.toDataXCoord(context.dragStartX));
                                     start = Math.round(g.toDataXCoord(context.dragEndX));
                                 }
-                                //addPeak(g.juHPLCName, g.toDataXCoord(context.dragStartX), g.toDataXCoord(context.dragEndX));
 
+
+                                //check if we already have a Peaks object, if not, set it to an empty list
                                 if (g.chromatogram.Data.Peaks == null) {
                                     Vue.set(g.chromatogram.Data, "Peaks", []);
-                                    //g.chromatogram.Data.Peaks = [];
                                 }
+
+                                //check if we already have Peaks for this graph, if not, set it to an empty list
                                 if (g.chromatogram.Data.Peaks[g.graphname] == null) {
-                                    //g.chromatogram.Data.Peaks[g.graphname] = [];
                                     Vue.set(g.chromatogram.Data.Peaks, g.graphname, []);
                                 }
 
-                                console.log("adding peak from ",start," to ",end," to graph ",g.graphname);
+                                console.log("adding peak from ", start, " to ", end, " to graph ", g.graphname);
 
                                 g.chromatogram.Data.Peaks[g.graphname].push({
                                     "StartTime": start,
@@ -433,6 +439,8 @@ Vue.component('dygraphs-graph', {
                                     "Mode": "default",
                                     "Name": "undefined"
                                 });
+
+                                g.vueObject.$eventHub.$emit('renamePeaksForCalibration');
 
                                 context.dragEndX = null;
                                 context.dragEndY = null;
@@ -452,9 +460,21 @@ Vue.component('dygraphs-graph', {
 
                                 return;
                             }
+
+                            var direction = context.dragDirection;
                             Dygraph.endZoom(event, g, context);
-                            document.removeEventListener('mousemove', mousemove, false);
-                            document.removeEventListener('mouseup', mouseup, false);
+                            if (direction == 1) {
+                                var start = g.dateWindow_[0] / 60;
+                                var end = g.dateWindow_[1] / 60;
+
+                                console.log(g.dateWindow_);
+
+                                if (start < end) {
+                                    app.$eventHub.$emit('setScaleX', {min: start, max: end});
+                                } else {
+                                    app.$eventHub.$emit('setScaleX', {min: end, max: start});
+                                }
+                            }
                         } else {
                             //maybeTreatMouseOpAsClick(event, g, context);
                         }
@@ -478,7 +498,7 @@ Vue.component('dygraphs-graph', {
                 var wcd = g.chromatogram.Data;
 
                 if (!wcd.Baseline.hasOwnProperty(g.graphname)) {
-                    Vue.set(wcd.Baseline,g.graphname,{
+                    Vue.set(wcd.Baseline, g.graphname, {
                         DatetimeValue: "",
                         Type: "linear"
                     });
@@ -487,7 +507,7 @@ Vue.component('dygraphs-graph', {
 
                 if (context.regionWidth < 10 || context.dragEndX == undefined) {//we don't want to handle zooming actions here
                     var x = g.toDataXCoord(context.dragStartX);
-                    var y = g.toDataYCoord(context.dragStartY)/g.chromatogram.Data.Factors[g.graphname];
+                    var y = g.toDataYCoord(context.dragStartY) / g.chromatogram.Data.Factors[g.graphname];
 
                     if (isNaN(x) || isNaN(y))
                         return;
@@ -502,7 +522,7 @@ Vue.component('dygraphs-graph', {
                         currentBaseline.DatetimeValue = removeClosestPointFromBaselineString(currentBaseline.DatetimeValue, g, x, y);
                     }
                     if (event.button == 0) {
-                        console.log("adding baseline point ",x,y);
+                        console.log("adding baseline point ", x, y);
 
                         if (currentBaseline.DatetimeValue.length == 0) {
                             currentBaseline.DatetimeValue += "" + x + "," + y
@@ -519,13 +539,175 @@ Vue.component('dygraphs-graph', {
             willDestroyContextMyself: true,
 
             touchstart: function touchstart(event, g, context) {
-                DygraphInteraction.startTouch(event, g, context);
+                event.preventDefault();  // touch browsers are all nice.
+                if (event.touches.length > 1) {
+                    // If the user ever puts two fingers down, it's not a double tap.
+                    context.startTimeForDoubleTapMs = null;
+                }
+
+                var touches = [];
+                for (var i = 0; i < event.touches.length; i++) {
+                    var t = event.touches[i];
+                    // we dispense with 'dragGetX_' because all touchBrowsers support pageX
+                    touches.push({
+                        pageX: t.pageX,
+                        pageY: t.pageY,
+                        dataX: g.toDataXCoord(t.pageX),
+                        dataY: g.toDataYCoord(t.pageY)
+                        // identifier: t.identifier
+                    });
+                }
+                context.initialTouches = touches;
+
+                if (touches.length == 1) {
+                    // This is just a swipe.
+                    context.initialPinchCenter = touches[0];
+                    context.touchDirections = {x: true, y: true};
+                } else if (touches.length >= 2) {
+                    // It's become a pinch!
+                    // In case there are 3+ touches, we ignore all but the "first" two.
+
+                    // only screen coordinates can be averaged (data coords could be log scale).
+                    context.initialPinchCenter = {
+                        pageX: 0.5 * (touches[0].pageX + touches[1].pageX),
+                        pageY: 0.5 * (touches[0].pageY + touches[1].pageY),
+
+                        // TODO(danvk): remove
+                        dataX: 0.5 * (touches[0].dataX + touches[1].dataX),
+                        dataY: 0.5 * (touches[0].dataY + touches[1].dataY)
+                    };
+
+                    // Make pinches in a 45-degree swath around either axis 1-dimensional zooms.
+                    var initialAngle = 180 / Math.PI * Math.atan2(
+                        context.initialPinchCenter.pageY - touches[0].pageY,
+                        touches[0].pageX - context.initialPinchCenter.pageX);
+
+                    // use symmetry to get it into the first quadrant.
+                    initialAngle = Math.abs(initialAngle);
+                    if (initialAngle > 90) initialAngle = 90 - initialAngle;
+
+                    context.touchDirections = {
+                        x: (initialAngle < (90 - 45 / 2)),
+                        y: (initialAngle > 45 / 2)
+                    };
+                }
+
+                // save the full x & y ranges.
+                context.initialRange = {
+                    x: g.xAxisRange(),
+                    y: g.yAxisRange()
+                };
             },
             touchmove: function touchmove(event, g, context) {
-                DygraphInteraction.moveTouch(event, g, context);
+                // If the tap moves, then it's definitely not part of a double-tap.
+                context.startTimeForDoubleTapMs = null;
+
+                var i, touches = [];
+                for (i = 0; i < event.touches.length; i++) {
+                    var t = event.touches[i];
+                    touches.push({
+                        pageX: t.pageX,
+                        pageY: t.pageY
+                    });
+                }
+                var initialTouches = context.initialTouches;
+
+                var c_now;
+
+                // old and new centers.
+                var c_init = context.initialPinchCenter;
+                if (touches.length == 1) {
+                    c_now = touches[0];
+                } else {
+                    c_now = {
+                        pageX: 0.5 * (touches[0].pageX + touches[1].pageX),
+                        pageY: 0.5 * (touches[0].pageY + touches[1].pageY)
+                    };
+                }
+
+                // this is the "swipe" component
+                // we toss it out for now, but could use it in the future.
+                var swipe = {
+                    pageX: c_now.pageX - c_init.pageX,
+                    pageY: c_now.pageY - c_init.pageY
+                };
+                var dataWidth = context.initialRange.x[1] - context.initialRange.x[0];
+                var dataHeight = context.initialRange.y[0] - context.initialRange.y[1];
+                swipe.dataX = (swipe.pageX / g.plotter_.area.w) * dataWidth;
+                swipe.dataY = (swipe.pageY / g.plotter_.area.h) * dataHeight;
+                var xScale, yScale;
+
+                // The residual bits are usually split into scale & rotate bits, but we split
+                // them into x-scale and y-scale bits.
+                if (touches.length == 1) {
+                    xScale = 1.0;
+                    yScale = 1.0;
+                } else if (touches.length >= 2) {
+                    var initHalfWidth = (initialTouches[1].pageX - c_init.pageX);
+                    xScale = (touches[1].pageX - c_now.pageX) / initHalfWidth;
+
+                    var initHalfHeight = (initialTouches[1].pageY - c_init.pageY);
+                    yScale = (touches[1].pageY - c_now.pageY) / initHalfHeight;
+                }
+
+                // Clip scaling to [1/8, 8] to prevent too much blowup.
+                xScale = Math.min(8, Math.max(0.125, xScale));
+                yScale = Math.min(8, Math.max(0.125, yScale));
+
+                var didZoom = false;
+                if (context.touchDirections.x) {
+                    g.dateWindow_ = [
+                        c_init.dataX - swipe.dataX + (context.initialRange.x[0] - c_init.dataX) / xScale,
+                        c_init.dataX - swipe.dataX + (context.initialRange.x[1] - c_init.dataX) / xScale
+                    ];
+                    didZoom = true;
+                }
+
+                if (context.touchDirections.y) {
+                    for (i = 0; i < 1  /*g.axes_.length*/; i++) {
+                        var axis = g.axes_[i];
+                        var logscale = g.attributes_.getForAxis("logscale", i);
+                        if (logscale) {
+                            // TODO(danvk): implement
+                        } else {
+                            axis.valueRange = [
+                                c_init.dataY - swipe.dataY + (context.initialRange.y[0] - c_init.dataY) / yScale,
+                                c_init.dataY - swipe.dataY + (context.initialRange.y[1] - c_init.dataY) / yScale
+                            ];
+                            didZoom = true;
+                        }
+                    }
+                }
+
+                g.drawGraph_(false);
+
+                // We only call zoomCallback on zooms, not pans, to mirror desktop behavior.
+                if (didZoom && touches.length > 1 && g.getFunctionOption('zoomCallback')) {
+                    var viewWindow = g.xAxisRange();
+                    g.getFunctionOption("zoomCallback").call(g, viewWindow[0], viewWindow[1], g.yAxisRanges());
+                }
             },
             touchend: function touchend(event, g, context) {
-                DygraphInteraction.endTouch(event, g, context);
+                if (event.touches.length !== 0) {
+                    // this is effectively a "reset"
+                    DygraphInteraction.startTouch(event, g, context);
+                } else if (event.changedTouches.length == 1) {
+                    // Could be part of a "double tap"
+                    // The heuristic here is that it's a double-tap if the two touchend events
+                    // occur within 500ms and within a 50x50 pixel box.
+                    var now = new Date().getTime();
+                    var t = event.changedTouches[0];
+                    if (context.startTimeForDoubleTapMs &&
+                        now - context.startTimeForDoubleTapMs < 500 &&
+                        context.doubleTapX && Math.abs(context.doubleTapX - t.screenX) < 50 &&
+                        context.doubleTapY && Math.abs(context.doubleTapY - t.screenY) < 50) {
+                        g.resetZoom();
+                    } else {
+                        context.startTimeForDoubleTapMs = now;
+                        context.doubleTapX = t.screenX;
+                        context.doubleTapY = t.screenY;
+                    }
+                }
             },
 
             // Disable zooming out if panning.
@@ -557,12 +739,15 @@ Vue.component('dygraphs-graph', {
                     return;
                 }
                 g.resetZoom();
+
+                app.$eventHub.$emit('resetZoom');
+
             }
         };
 
         //we want a higher pixel-ratio for better printing results
         var pixelratio = 1;
-        if(location.search.substr(1) == "print=true")
+        if (location.search.substr(1) == "print=true")
             pixelratio = 4;
 
         this.$data._graph = new Dygraph('dygraphs-graph' + this._uid, transformDataToArray(this.chromatogram, this.graphname), {
@@ -571,16 +756,20 @@ Vue.component('dygraphs-graph', {
             legend: 'always',
             underlayCallback: this.juhplcdygraphsUnderlayCallback,
             drawCallback: this.juhplcdygraphsDrawCallback,
+            highlightCallback: this.highlightCallback,
+            unhighlightCallback: this.unhighlightCallback,
             interactionModel: this.interactionModel,
-            ylabel: this.graphname+"( "+this.chromatogram.Data.Units[this.graphname]+" )",
+            ylabel: this.graphname + "( " + this.chromatogram.Data.Units[this.graphname] + " )",
             axes: {
                 x: {
                     axisLabelFormatter: (x) => secondsMinutes(x, this.chromatogram.SampleRate),
-                    valueFormatter: (x) => secondsMinutes(x, this.chromatogram.SampleRate)
+                    valueFormatter: (x) => secondsMinutes(x, this.chromatogram.SampleRate),
+                    ticker: (min, max, pixels, opts, dygraph, vals) => getXAxisTicks(min, max, pixels, opts, dygraph, vals, this.chromatogram.SampleRate)
                 }
             },
             labels: ["x", this.graphname],
-            pixelRatio:pixelratio
+            pixelRatio: pixelratio
+
         });
 
         this.$data._graph._drawPeakPreview = this._drawPeakPreview;
@@ -608,6 +797,7 @@ Vue.component('dygraphs-graph', {
          */
         this.$watch(() => chromatogram.Data.Data[this.graphname][0],
             () => {
+                delete this.chromatogram.tmp;
                 this._refreshGraph({
                     keepXAxis: true,
                     keepYAxis: true
@@ -615,6 +805,7 @@ Vue.component('dygraphs-graph', {
             }, {
                 deep: true
             });
+
 
         /**
          * refresh on new DeadTime
@@ -652,6 +843,37 @@ Vue.component('dygraphs-graph', {
             }
         );
 
+        this.$eventHub.$on('renamePeaksForCalibration', () => {
+            if (typeof(this.$data._graph.chromatogram.calibration) === 'undefined')
+                return;
+            for (var i = 0; i < this.chromatogram.Data.Peaks[this.graphname].length; i++) {
+                var result = this.$data._graph.chromatogram.Data.Peaks[this.graphname];
+                var peak = new SavitzkyGolayPeak(this.$data._graph.chromatogram.Data.Data[this.graphname], result[i].StartTime, result[i].EndTime, this.graphname, this.chromatogram);
+                var retentionFactor = peak.calculate_retention_factor(this.$data._graph.chromatogram.DeadTime);
+                for (var j = 0; j < this.chromatogram.calibration.length; j++) {
+                    var currCal = this.chromatogram.calibration[j].fields;
+
+                    if (retentionFactor >= (currCal.RetentionFactor - currCal.RetentionFactorError)
+                        && retentionFactor <= (currCal.RetentionFactor + currCal.RetentionFactorError)
+                        && this.graphname == currCal.Channel) {
+                        //we have a matching peak in our calibration table - name the peak accordingly
+                        result[i].Name = currCal.Name;
+                    }
+                }
+            }
+        });
+
+        this.$eventHub.$on('setSelection', (x) => {
+                //console.debug("<dygraphs-graph> - "+this.graphname+":setSelection");
+                this.$data._graph.setSelection(this.$data._graph.getRowForX(x.x));
+            }
+        );
+
+        this.$eventHub.$on('clearSelection', (x) => {
+                this.$data._graph.clearSelection();
+            }
+        );
+
         this.$eventHub.$on('zoomIntoPeak', (x) => {
                 if (x.channelName === this.graphname) {
                     this.zoomIntoPeak(x.peakId);
@@ -659,47 +881,52 @@ Vue.component('dygraphs-graph', {
             }
         );
 
+        this.$eventHub.$on('resetZoom', () => {
+            this.$data._graph.resetZoom();
+        });
+
         this.$eventHub.$on('setColor', (x) => {
             if (x.channelName == this.graphname) {
-                if(this.$data._graph.colors_[0] != x.color) {
-                    console.log("setting new color ",x.color," on ",x.channelName);
+                if (this.$data._graph.colors_[0] != x.color) {
+                    console.log("setting new color ", x.color, " on ", x.channelName);
                     this.$data._graph.updateOptions({color: x.color});
-                }else{
-                    console.log("already have color ",x.color," on ",x.channelName);
+                } else {
+                    console.log("already have color ", x.color, " on ", x.channelName);
                 }
             }
         });
 
         this.$eventHub.$on('setScaleY', (x) => {
             if (x.channelName == this.graphname) {
-                console.log("<dygraphs-graph>setScaleY:",x);
+                console.log("<dygraphs-graph>setScaleY:", x);
                 var pmin = parseFloat(x.min);
                 var pmax = parseFloat(x.max);
-                if(pmin > pmax){
-                        this.$data._graph.updateOptions({
-                        valueRange:[pmax,pmin]
-                    },false);
-                }else{
+                if (pmin > pmax) {
                     this.$data._graph.updateOptions({
-                    valueRange:[pmin,pmax]
-                },false);
+                        valueRange: [pmax, pmin]
+                    }, false);
+                } else {
+                    this.$data._graph.updateOptions({
+                        valueRange: [pmin, pmax]
+                    }, false);
 
+                }
             }
-        }});
+        });
 
         this.$eventHub.$on('setScaleX', (x) => {
 
-            console.log("<dygraphs-graph>setScaleX:",x);
+            console.log("<dygraphs-graph>setScaleX:", x);
             var pmin = parseFloat(x.min);
             var pmax = parseFloat(x.max);
-            if(pmin > pmax){
-                    this.$data._graph.updateOptions({
-                    dateWindow:[60*pmax*this.chromatogram.SampleRate,60*pmin*this.chromatogram.SampleRate]
-                },false);
-            }else{
+            if (pmin > pmax) {
                 this.$data._graph.updateOptions({
-                dateWindow:[60*pmin*this.chromatogram.SampleRate,60*pmax*this.chromatogram.SampleRate]
-            },false);
+                    dateWindow: [60 * pmax * this.chromatogram.SampleRate, 60 * pmin * this.chromatogram.SampleRate]
+                }, false);
+            } else {
+                this.$data._graph.updateOptions({
+                    dateWindow: [60 * pmin * this.chromatogram.SampleRate, 60 * pmax * this.chromatogram.SampleRate]
+                }, false);
 
             }
         });
@@ -710,22 +937,23 @@ Vue.component('dygraphs-graph', {
          */
         this._disableContextmenuOnRightclick();
     },
-    updated(){
+    updated() {
         console.log("updated!");
     },
     render: function (h) {
         return h(
-            'div',{
-                attrs:{
-                    class:"dygraphsDiv"
-                }}, [h('div', {
+            'div', {
+                attrs: {
+                    class: "dygraphsDiv"
+                }
+            }, [h('div', {
                 attrs: {
                     id: 'dygraphs-graph-label' + this._uid,
                 }
             }), h('div', {
                 attrs: {
                     id: 'dygraphs-graph' + this._uid,
-                    class:"dygraphsGraph"
+                    class: "dygraphsGraph"
                 },
                 style: "width:100%"
             })]
@@ -736,7 +964,7 @@ Vue.component('dygraphs-graph', {
 function transformDataToArray(c, graphName) {
     var channelshifts = _getChannelOrderShifts(c);
 
-    if(!channelshifts.hasOwnProperty(graphName))
+    if (!channelshifts.hasOwnProperty(graphName))
         return [];
 
     if (typeof c.tmp === 'undefined') {
@@ -755,12 +983,12 @@ function transformDataToArray(c, graphName) {
                 i2++;
             }
             for (var i = minNumberOfValues; i < c.Data.Data[graphName][0].length; i++) {
-                c.tmp.dygraphsData[graphName][i2] = [i2, parseFloat(c.Data.Data[graphName][0][i])*parseFloat(c.Data.Factors[graphName])];
+                c.tmp.dygraphsData[graphName][i2] = [i2, parseFloat(c.Data.Data[graphName][0][i]) * parseFloat(c.Data.Factors[graphName])];
                 i2++;
             }
         } else {
             for (var i = c.tmp.dygraphsData[graphName].length; i < c.Data.Data[graphName][0].length; i++) {
-                c.tmp.dygraphsData[graphName][i] = [i, parseFloat(c.Data.Data[graphName][0][i])*parseFloat(c.Data.Factors[graphName]) ];
+                c.tmp.dygraphsData[graphName][i] = [i, parseFloat(c.Data.Data[graphName][0][i]) * parseFloat(c.Data.Factors[graphName])];
             }
         }
         return c.tmp.dygraphsData[graphName];

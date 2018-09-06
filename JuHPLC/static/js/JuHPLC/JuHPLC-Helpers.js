@@ -13,6 +13,33 @@ function secondsMinutes(d,samplerate) {
     return (d/(60.0*samplerate)).toFixed(3);
 }
 
+function getXAxisTicks(min,max,pixels,opts,dygraph,vals,samplerate){
+
+    var numberOfValues = Math.round(pixels/72)+1; //default value from dygraphs for min distance between two ticks
+    var result = [];
+
+
+    var begin = Math.ceil(min/samplerate/30)*samplerate*30;
+
+    if((max-min)/60/samplerate <= numberOfValues) {
+        for (var i = begin; i <= max; i +=30*samplerate) {
+            result.push({
+                v: i,
+                label: Math.round(i / 60 / samplerate * 10) / 10
+            });
+        }
+    }else{
+        for (var i = begin;  i <= max; i += Math.round((max-min)/numberOfValues/30)*30) {
+            result.push({
+                v: i,
+                label: Math.round(i / 60 / samplerate * 10) / 10
+            });
+        }
+    }
+    return result;
+
+}
+
 function download(filename, text) {
     let element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));

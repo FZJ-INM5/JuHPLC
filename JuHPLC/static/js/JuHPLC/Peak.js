@@ -11,7 +11,7 @@ class Peak {
      * @param endTime the ending time of the peak, as zero-based index to access the data array
      * @constructor
      */
-    constructor(data, startTime, endTime) {
+    constructor(data, startTime, endTime, chromatogram) {
         this.data = data;
         this.startTime = startTime;
         this.StartTime=startTime;
@@ -105,13 +105,54 @@ class SavitzkyGolayPeak extends Peak {
         this.filteredData = [];
         this.chromatogram = chromatogram;
 
+        this.projectedDataFiltered=[];
         //Default-Paramters for the data, evaluated by experimenting
+        if(typeof(this.chromatogram.tmp) === 'undefined'){
+            this.chromatogram.tmp={};
+        }
+
         if (graphName == "Counter") {
-            this.filteredData = this.filterDataWithOptions(data[0], filterOptionsCounter);
-            this.projectedDataFiltered = this.filterDataWithOptions(this.projectedData[0], filterOptionsCounter);
+            if(typeof(chromatogram.tmp.filteredData) === 'undefined'){
+                this.chromatogram.tmp.filteredData={};
+            }
+            if(typeof(chromatogram.tmp.filteredData[this.graphName]) === 'undefined') {
+                this.chromatogram.tmp.filteredData[this.graphName] = [];
+                this.chromatogram.tmp.filteredData[this.graphName] = this.filterDataWithOptions(data[0], filterOptionsCounter);
+                this.filteredData = this.chromatogram.tmp.filteredData[this.graphName];
+            }
+            if(typeof(this.chromatogram.tmp.projectedDataFiltered) === 'undefined') {
+                this.chromatogram.tmp.projectedDataFiltered={};
+            }
+            if(typeof(this.chromatogram.tmp.projectedDataFiltered[this.graphName]) === 'undefined') {
+                this.chromatogram.tmp.projectedDataFiltered[this.graphName]=[];
+                this.chromatogram.tmp.projectedDataFiltered[this.graphName] = this.filterDataWithOptions(this.projectedData[0], filterOptionsCounter);
+                this.projectedDataFiltered = this.chromatogram.tmp.projectedDataFiltered[this.graphName];
+            }
+
+            this.filteredData = this.chromatogram.tmp.filteredData[this.graphName];
+            this.projectedDataFiltered = this.chromatogram.tmp.projectedDataFiltered[this.graphName];
+
         } else  {
-            this.filteredData = this.filterDataWithOptions(data[0], filterOptionsUV);
-            this.projectedDataFiltered = this.filterDataWithOptions(this.projectedData[0], filterOptionsUV);
+            if(typeof(chromatogram.tmp.filteredData) === 'undefined'){
+                this.chromatogram.tmp.filteredData={};
+            }
+            if(typeof(chromatogram.tmp.filteredData[this.graphName]) === 'undefined') {
+                this.chromatogram.tmp.filteredData[this.graphName] = [];
+                this.chromatogram.tmp.filteredData[this.graphName] = this.filterDataWithOptions(data[0], filterOptionsUV);
+                this.filteredData = this.chromatogram.tmp.filteredData[this.graphName];
+            }
+            if(typeof(this.chromatogram.tmp.projectedDataFiltered) === 'undefined') {
+                this.chromatogram.tmp.projectedDataFiltered={};
+            }
+            if(typeof(this.chromatogram.tmp.projectedDataFiltered[this.graphName]) === 'undefined') {
+                this.chromatogram.tmp.projectedDataFiltered[this.graphName]=[];
+                this.chromatogram.tmp.projectedDataFiltered[this.graphName] = this.filterDataWithOptions(this.projectedData[0], filterOptionsUV);
+                this.projectedDataFiltered = this.chromatogram.tmp.projectedDataFiltered[this.graphName];
+            }
+
+            this.filteredData = this.chromatogram.tmp.filteredData[this.graphName];
+            this.projectedDataFiltered = this.chromatogram.tmp.projectedDataFiltered[this.graphName];
+
         }
 
 
@@ -322,7 +363,16 @@ class SavitzkyGolayPeak extends Peak {
         // left and right of max
 
         var max = this.getPeakMaximumProjected();
-        var interpolation = this.calculateLinearInterpolation(0);
+        var interpolation;
+
+        if(typeof this.chromatogram.Data.Baseline[this.graphName] === 'undefined') {
+            interpolation = this.calculateLinearInterpolation(0);
+        }
+        else
+        {
+            var bl = new Baseline(this.chromatogram.Data.Baseline[this.graphName]);
+            interpolation = bl.calculateAtPointX.bind(bl);
+        }
 
 
         var h = heightInPercent / 100.0;
@@ -333,21 +383,37 @@ class SavitzkyGolayPeak extends Peak {
         var result = {
             a: 0,
             b: 0
-        }
+        };
 
         for (var i = this.startTime; i <= this.endTime; i++) {
             if (this.projectedData[0][i] > targetval) {
-                result.a = max.f_smoothed_x - i;
+                //here we check if |this.projectedData[0][i] - targetval| is smaller than |this.projectedData[0][i+1] - targetval|
+                //because we're working with discrete data and we want to have small error margins
+                if(Math.abs(this.projectedData[0][i] - targetval) > Math.abs(this.projectedData[0][i+1] - targetval)) {
+                    result.a = max.f_smoothed_x - i;
+                }else{
+                    result.a = max.f_smoothed_x - i+1;
+                }
                 break;
             }
         }
         for (var i = this.endTime; i >= this.startTime; i--) {
             if (this.projectedData[0][i] > targetval) {
-                result.b = i - max.f_smoothed_x;
+                if(Math.abs(this.projectedData[0][i] - targetval) > Math.abs(this.projectedData[0][i-1] - targetval)) {
+                    result.b = i - max.f_smoothed_x;
+                }else{
+                    result.b = i - max.f_smoothed_x + 1;
+                }
                 break;
             }
         }
         return result;
+    }
+
+    getEfficiencyFactor(heightInPercent) {
+        var sym = this.getPeakSymmetry(heightInPercent);
+        var N = 5.54*Math.pow((this.getPeakMaximumProjected().f_smoothed_x/(sym.a+sym.b)),2);
+        return N;
     }
 
     calculate_retention_factor(deadTime) {
@@ -436,6 +502,14 @@ class SavitzkyGolayPeak extends Peak {
         return function (x) {
             return m * x + n;
         };
+    }
+
+    getName(){
+        for(var i=0;i<this.chromatogram.Data.Peaks[this.graphName].length;i++){
+            var current = this.chromatogram.Data.Peaks[this.graphName][i];
+            if(current.StartTime == this.startTime && current.EndTime == this.endTime)
+                return current.Name;
+        }
     }
 
 }
@@ -540,7 +614,7 @@ class SavitzkyGolayPeakFinding {
 
 
         function containsPeak(arr, start, end) {
-            console.log(arr, start, end);
+
             for (var i = 0; i < arr.length; i++) {
                 if (arr[i].StartTime == start || arr[i].EndTime == end) {
                     return true;
@@ -573,13 +647,14 @@ class SavitzkyGolayPeakFinding {
                 }
             }
 
-
             if (start != 0 && end != 0 && start != end && start < end && end - start > peakMinWidth && !containsPeak(result, start, end)) {
                 result.push({"StartTime": start, "EndTime": end,"Name":"undefined","Mode":"default"});
             }
         }
         return result;
     }
+
+
 
 
 }

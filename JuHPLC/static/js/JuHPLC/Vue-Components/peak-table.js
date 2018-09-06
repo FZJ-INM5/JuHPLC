@@ -4,7 +4,7 @@ Vue.component('peak-table', {
         graphname: "",
         chromatogram: {}
     },
-    template: '<div class="peakTable"><table class="table table-sm juhplcPeakTable page-break-inside-avoid" >\n' +
+    template: '<div class="peakTable"><table class="table table-sm juhplcPeakTable page-break-inside-avoid" v-show="peaks[graphname].length">\n' +
     '            <thead>\n' +
     '            <tr>\n' +
     '                <th></th>\n' +
@@ -12,16 +12,22 @@ Vue.component('peak-table', {
     '                <th>Name</th>\n' +
     '                <th>t<sub>R</sub></th>\n' +
     '                <th>k\'</th>\n' +
+    '                <th>Symmetry</th>\n' +
+    '                <th>N</th>\n' +
     '                <th>Area</th>\n' +
-    '                <th>Details</th>\n' +
-    '                <th>Delete</th>\n' +
+    '                <th class="hidden-print">Details</th>\n' +
+    '                <th class="hidden-print">Delete</th>\n' +
     '                <th>%</th>\n' +
     '            </tr>\n' +
     '            </thead>\n' +
     '            <tbody>\n' +
     '                <peak-table-row ' +
     '                     v-for="(data,key) in peaks[graphname]" ' +
-    '                     :peak="data" :graphname="graphname" :idx="key" :chromatogram="chromatogram" :key="data.StartTime+\'-\'+data.EndTime">' +
+    '                     :peak="data" ' +
+    '                       :graphname="graphname" ' +
+    '                       :idx="key" ' +
+    '                       :chromatogram="chromatogram" ' +
+    '                       :key="data.StartTime+\'-\'+data.EndTime">' +
     '                </peak-table-row>' +
     '            </tbody>\n' +
     '        </table></div>',
@@ -62,10 +68,13 @@ Vue.component('peak-table-row', {
         };
     },
     created() {
-        console.log("peak-table-row");
-        console.log(this);
         this.$data._peak = this.getSavitzkyGolayPeak(this.graphname, this.idx);
         this.$data._checked = false;
+    },
+    watch:{
+        "peak.Name":function(val){
+            $('#peak-table-row-nameInput' + this._uid).val(val);
+        }
     },
     computed: {
         PeakArea: function () {
@@ -86,6 +95,13 @@ Vue.component('peak-table-row', {
         },
         RetentionFactor: function () {
             return Math.round(this.$data._peak.calculate_retention_factor(this.chromatogram.DeadTime) * 100) / 100;
+        },
+        PeakSymmetry: function () {
+            var sym = this.$data._peak.getPeakSymmetry(50);
+            return Math.round(sym.a / sym.b * 100) / 100;
+        },
+        EfficiencyFactor: function () {
+            return Math.round(this.$data._peak.getEfficiencyFactor(50) * 100) / 100;
         }
     },
     methods: {
@@ -102,22 +118,40 @@ Vue.component('peak-table-row', {
 
         },
         zoomInto: function () {
-            this.$eventHub.$emit('zoomIntoPeak', {channelName:this.graphname,peakId:this.idx});
+            this.$eventHub.$emit('zoomIntoPeak', {
+                channelName: this.graphname,
+                peakId: this.idx
+            });
         },
         getSavitzkyGolayPeak: function () {
             let currentpeak = this.chromatogram.Data.Peaks[this.graphname][this.idx];
             return new SavitzkyGolayPeak(this.chromatogram.Data.Data[this.graphname], currentpeak.StartTime, currentpeak.EndTime, this.graphname, this.chromatogram);
         },
-        peakNameChanged:function(event){
-            this.peak.Name=event.target.value;
+        peakNameChanged: function (event) {
+            this.peak.Name = event.target.value;
         },
-        PeakAreaRender(){
-            if(this.graphname === "Counter" && typeof(this.chromatogram.HalfLife) != undefined && this.chromatogram.HalfLife > 0){
-                return this.PeakArea+"("+this.PeakAreaDecayCorrected+")";
-            }else{
-                return this.PeakArea;
+        PeakAreaRender() {
+            var area = this.PeakArea;
+            var result = area;
+
+            if (this.graphname === "Counter" &&
+                typeof(this.chromatogram.HalfLife) !== 'undefined' &&
+                this.chromatogram.HalfLife > 0) {
+                result += "(" + this.PeakAreaDecayCorrected + ")";
             }
+
+            if (typeof(this.chromatogram.calibration) !== 'undefined') {
+                for (var i = 0; i < this.chromatogram.calibration.length; i++) {
+                    var cur = this.chromatogram.calibration[i].fields;
+                    if (this.peak.Name == cur.Name && cur.Channel == this.graphname) {
+                        result += " (" + Math.round((cur.Slope * area + cur.YAxisIntercept) * 100) / 100 + " " + cur.Unit + " )";
+                    }
+                }
+            }
+
+            return result;
         }
+
     },
     render(h) {
         return h('tr', {
@@ -139,7 +173,9 @@ Vue.component('peak-table-row', {
                 h("td", [h('input', {
                     attrs: {
                         type: 'text',
-                        value: this.peak.Name
+                        value: this.peak.Name,
+                        id: 'peak-table-row-nameInput' + this._uid,
+                        class:"peak-table-textbox"
                     },
                     on: {
                         input: this.peakNameChanged
@@ -147,8 +183,10 @@ Vue.component('peak-table-row', {
                 })]),
                 h("td", this.RetentionTime),
                 h("td", this.RetentionFactor),
+                h("td", this.PeakSymmetry),
+                h("td", this.EfficiencyFactor),
                 h("td", this.PeakAreaRender()),
-                h("td", [h("button", {
+                h("td", {attrs: {class: "hidden-print"}}, [h("button", {
                     attrs: {
                         type: "button",
                         class: "btn btn-info btn-sm",
@@ -158,10 +196,10 @@ Vue.component('peak-table-row', {
                         click: this.zoomInto
                     }
                 }, "Details")]),
-                h("td", [h("button", {
+                h("td", {attrs: {class: "hidden-print"}}, [h("button", {
                     attrs: {
                         type: "button",
-                        class: "btn btn-danger btn-sm",
+                        class: "btn btn-danger btn-sm hidden-print",
                         style: "padding:0rem 1rem;"
                     },
                     on: {

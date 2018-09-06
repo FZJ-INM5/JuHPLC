@@ -1,0 +1,460 @@
+{% extends 'basetemplate.html' %}
+{% load fromunix %}
+{% load javascriptfile %}
+
+{% load compress %}
+
+{% block content %}
+
+    {% compress css inline %}
+        <link rel="stylesheet" href="/static/css/dygraphs-2.1.0.css" type="text/css" charset="utf-8"/>
+        <link rel="stylesheet" href="/static/css/offcanvas.css" type="text/css" charset="utf-8"/>
+        <link rel="stylesheet" href="/static/css/fa-svg-with-js.css" type="text/css" charset="utf-8"/>
+    {% endcompress %}
+    {% autoescape off %}
+        {% javascriptfile "/static/js/ml-savitzky-golay-browserified.min.js" request.GET.export %}
+    {% endautoescape %}
+    {% compress js inline %}
+
+        <script src="/static/js/vue.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Vue-Components/dygraphs-graph.js" type="text/javascript"
+                charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Vue-Components/chromatogram-infocard.js" type="text/javascript"
+                charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Vue-Components/peak-table.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="/static/js/jscolor.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/cookies.js" type="text/javascript" charset="utf-8"></script>
+        <!--<script src="/static/js/fontawesome-all.js" type="text/javascript" charset="utf-8"></script>-->
+        <script src="/static/js/feather.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/math.min.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="/static/js/penalized-least-squares.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="/static/js/dygraphs-2.1.0.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/dygraphs-synchronizer.min.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="/static/js/graphcolors.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Baseline.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Peak.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/JuHPLC.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/JuHPLC-Helpers.js" type="text/javascript" charset="utf-8"></script>
+
+        <!--<script src="/static/js/iaea-nuclides.json" type="text/javascript" charset="utf-8"></script>-->
+
+        <script src="/static/js/tensorflow.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="/static/js/JuHPLC/gauss.js" type="text/javascript" charset="utf-8"></script>
+    {% endcompress %}
+
+    <style>
+        .dygraphs-annotation {
+            height: 20px;
+        }
+    </style>
+
+    <script>
+        window.data = {{ calibrations|safe }};
+    </script>
+
+    <div class="container-fluid" id="app">
+
+        <div class="starter-template">
+            <h2>New Calibration</h2>
+            <div class="form-group">
+                <label for="nameInput">Sample Name</label>
+                <input type="text" class="form-control" id="nameInput" aria-describedby="nameHelp"
+                       placeholder="Enter the sample name">
+                <small id="nameHelp" class="form-text text-muted">You will have to have a peak named like this in the
+                    respective chromatograms. Enter at least 3 characters.
+                </small>
+            </div>
+        </div>
+        <div class="col-md-12 col-lg-12 col-sm-12">
+            <table class="table table-striped table-hover table-sm">
+                <thead class="thead-inverse">
+                <tr>
+                    <th>#</th>
+                    <th>Details</th>
+                    <th>Graph</th>
+                    <th>Use</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(name,idx) in chromatograms">
+                    <td>[[ name.id ]]</td>
+                    <td>
+                        <chromatogram-infocard :chromatogram="name"></chromatogram-infocard>
+                    </td>
+                    <td>
+                        <dygraphs-graph :chromatogram="name" :graphname="getGraphNameByPeakName(name)"
+                                        :key="name+idx+'graph'"></dygraphs-graph>
+                    </td>
+                    <td><input type="checkbox" :value="name.id" v-model="selectedChromatograms"/></td>
+                </tr>
+                </tbody>
+            </table>
+            <hr style="margin-top:30px"/>
+            <div class="row">
+                <div class="col-lg-3">
+                    <div id="regressionGraph" style="width:100%;height:320px"></div>
+                </div>
+                <div class="col-lg-9">
+                    <form method="POST" action="/Calibration/Edit/{{ id }}/Save">
+                        {% csrf_token %}
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Data</h5>
+                                    <p class="card-text">
+                                    <table class="table table small table-sm">
+                                        <tbody>
+                                        <tr>
+                                            <th>Slope</th>
+                                            <td><input type="text" id="regressionSlope" name="Slope"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Y-Intercept</th>
+                                            <td><input type="text" id="regressionYIntercept" name="YAxisIntercept"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>correlation coefficient (r)</th>
+                                            <td id="regressionCorrelationCoefficient"></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Data</h5>
+                                    <p class="card-text">
+
+                                        <input name="Chromatograms" type="hidden"
+                                               v-if="selectedChromatograms.length > 0"
+                                               v-model="selectedChromatograms"/>
+                                        <input name="Flow" type="text"
+                                               v-if="selectedChromatograms.length > 0"
+                                               v-model="selectedChromatogramsObjects[0].Flow"/>
+                                        <input name="UVWaveLength" type="text"
+                                               v-if="selectedChromatograms.length > 0"
+                                               v-model="selectedChromatogramsObjects[0].UVWaveLength"/>
+                                        <input name="Column" type="text"
+                                               v-if="selectedChromatograms.length > 0"
+                                               v-model="selectedChromatogramsObjects[0].Column"/>
+                                        <input name="Unit" type="text"
+                                               v-if="selectedChromatograms.length > 0"
+                                               v-model="selectedChromatogramsObjects[0].ConcentrationUnit"/>
+                                        <input id="channelName" name="Channel" type="text"/>
+                                        <input id="sampleName" name="Name" type="text"/>
+                                        <input id="eluent" name="Eluent" type="text"/>
+
+                                        <input id="retentionFactor" name="RetentionFactor" type="text"/>
+                                        <input id="retentionFactorError" name="RetentionFactorError" type="text"/>
+
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div><!-- /.container -->
+    <script>
+        window.chromatograms = [];
+        window.searchTerm = "";
+        window.selectedChromatograms = [];
+
+
+        document.onreadystatechange = function () {
+            var state = document.readyState;
+            if (state == 'interactive') {
+                init();
+            } else if (state == 'complete') {
+                initOnCompleteLoad();
+            }
+        };
+
+        function initOnCompleteLoad() {
+            initVue();
+            $('#nameInput').on('input',inputChanged);
+
+            initEdit();
+
+
+        }
+
+        function inputChanged() {
+            var input = $('#nameInput').val();
+            if (input.length >= 3) {
+                loadChromatogramsFromServer(input);
+                //Vue.set(window,"searchTerm",input);
+            } else {
+                while (window.chromatograms.length > 0)
+                    window.chromatograms.pop();
+            }
+            app.$data.searchTerm = input;
+        }
+
+        function initEdit() {
+            console.log(window.data);
+            var current = window.data.filter((x) => {
+                return x.pk =={{id}};
+            })[0];
+
+            $('#nameInput').val(current.fields.Name);
+            inputChanged();
+
+            for(var i=0;i<current.fields.Chromatograms.length;i++){
+                window.selectedChromatograms.push(current.fields.Chromatograms[i]);
+            }
+        }
+
+        function init() {
+        }
+
+        function loadChromatogramsFromServer(peakName) {
+            $.ajax({
+                url: "/api/GetChromatogramsWithPeaksNamed/" + peakName,
+            })
+                .done(function (msg) {
+                    var parsed = JSON.parse(msg.chromatograms);
+                    console.log(parsed);
+
+                    while (window.chromatograms.length > 0)
+                        window.chromatograms.pop();
+
+                    for (var i = 0; i < parsed.length; i++) {
+                        window.chromatograms.push(parsed[i]);
+                    }
+
+                    var ids = window.chromatograms.map(x => {
+                        return x.id
+                    });
+                    window.app.$data.selectedChromatograms = window.app.$data.selectedChromatograms.filter((x) => {
+                        return ids.includes(x);
+                    });
+
+
+                    console.log(window.chromatograms);
+                    Vue.nextTick(function () {
+                        app.$eventHub.$emit('resizeGraphs');
+                    });
+                });
+        }
+
+        function initVue() {
+
+            Vue.prototype.$eventHub = new Vue(); // Global event bus
+
+            window.app = new Vue({
+                delimiters: ['[[', ']]'],
+                el: '#app',
+                data: {
+                    chromatograms: window.chromatograms,
+                    searchTerm: window.searchTerm,
+                    selectedChromatograms: window.selectedChromatograms,
+                    selectedChromatogramsObjects: []
+                },
+                methods: {
+                    getGraphNameByPeakName: getGraphNameByPeakName
+                },
+                watch: {
+                    selectedChromatograms: function (newVal, oldVal) {
+                        var chroms = getSelectedChromatograms();
+                        app.$data.selectedChromatogramsObjects = chroms;
+                        renderGraph(chroms);
+                        if(chroms.length > 0) {
+                            var regr = regression(chroms);
+                            $('#regressionSlope').val(regr.m);
+                            $('#regressionYIntercept').val(regr.n);
+                            $('#regressionCorrelationCoefficient').html(regr.r);
+                            $('#channelName').val(getGraphNameByPeakName(chroms[0]));
+                            $('#sampleName').val(getPeaks(chroms)[0].getName());
+
+                            $('#eluent').val(chroms[0].Eluents.map((x) => {
+                                return x.Name + "-" + x.Percentage + "%";
+                            }).join(','));
+                            var retentions = retentionfactorAvgError(chroms);
+                            $('#retentionFactor').val(retentions.avg);
+                            $('#retentionFactorError').val(retentions.error);
+                        }
+                    }
+                }
+            });
+        }
+
+        function getGraphNameByPeakName(chromatogram) {
+            var peakName = getPeakName();
+            for (var i in chromatogram.Data.Peaks) {
+                for (var j = 0; j < chromatogram.Data.Peaks[i].length; j++) {
+                    if (chromatogram.Data.Peaks[i][j].Name.toLowerCase().indexOf(peakName.toLowerCase()) > -1)
+                        return i;
+                }
+            }
+
+            return null;
+        }
+
+        function getPeakName() {
+            return app.$data.searchTerm;
+        }
+
+        /**
+         * Returns a list of SavitzkyGolayPeaks to perform further calculations on them (peakArea, retentionFactor calculation etc)
+         * @param chroms
+         * @returns {Array}
+         */
+        function getPeaks(chroms) {
+            var result = [];
+            for (var c = 0; c < chroms.length; c++) {
+                for (var i in chroms[c].Data.Peaks) {
+                    for (var j = 0; j < chroms[c].Data.Peaks[i].length; j++) {
+                        if (chroms[c].Data.Peaks[i][j].Name.toLowerCase().indexOf(getPeakName().toLowerCase()) > -1) {
+                            var currentpeak = chroms[c].Data.Peaks[i][j];
+                            var graphName = window.getGraphNameByPeakName(chroms[c]);
+                            result.push(new SavitzkyGolayPeak(chroms[c].Data.Data[graphName], currentpeak.StartTime, currentpeak.EndTime, graphName, chroms[c]));
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        function regression(chromatograms) {
+            var result = {m: 0, n: 0, r: 0};
+            var chroms = chromatograms;
+            var peaks = getPeaks(chroms);
+            var y = chroms.map((x) => {
+                return parseInt(x.Concentration);
+            });
+
+            var x = [];
+            for (var i = 0; i < chroms.length; i++) {
+                x[i] = peaks[i].calculatePeakArea();
+            }
+
+            var x_quer = 0;
+            var y_quer = 0;
+
+            for (var i = 0; i < x.length; i++) {
+                x_quer += x[i];
+                y_quer += y[i];
+            }
+            x_quer /= x.length;
+            y_quer /= y.length;
+
+            var upper = 0;
+            var lower = 0;
+            var r_lower1 = 0;
+            var r_lower2 = 0;
+            for (var i = 0; i < x.length; i++) {
+                upper += (x[i] - x_quer) * (y[i] - y_quer);
+                lower += (x[i] - x_quer) * (x[i] - x_quer);
+                r_lower1 += (x[i] - x_quer) * (x[i] - x_quer);
+                r_lower2 += (y[i] - y_quer) * (y[i] - y_quer);
+            }
+            result.m = upper / lower;
+            result.n = y_quer - result.m * x_quer;
+            result.r = upper / Math.sqrt(r_lower1 * r_lower2);
+
+
+            return result;
+        }
+
+        function retentionfactorAvgError(chromatograms) {
+            var chroms = chromatograms;
+            var peaks = getPeaks(chroms);
+            var avg = 0;
+            var rt = [];
+
+            var result = {
+                avg: 0,
+                error: 0
+            };
+
+            for (var i = 0; i < chroms.length; i++) {
+                var factor = peaks[i].calculate_retention_factor(chroms[i].DeadTime);
+                avg += factor;
+                rt[i] = factor;
+            }
+            result.avg = avg / chroms.length;
+            result.error = (math.max(rt) - math.min(rt));
+
+            return result;
+        }
+
+        function getSelectedChromatograms() {
+            return app.$data.chromatograms.filter((x) => {
+                for (var i = 0; i < app.$data.selectedChromatograms.length; i++) {
+                    if (app.$data.selectedChromatograms[i] == x.id)
+                        return true;
+                }
+                return false;
+            });
+        }
+
+        function renderGraph(chromatograms) {
+            var chroms = chromatograms;
+
+            var x_values = chroms.map((x) => {
+                return parseInt(x.Concentration);
+            });
+            var regressionResult = regression(chroms);
+            var areas = [];
+
+            var peaks = getPeaks(chroms);
+
+
+            for (var i = 0; i < chroms.length; i++) {
+                areas[i] = peaks[i].calculatePeakArea();
+            }
+
+            var data = "x,measured,regression\n";
+            for (var i = 0; i < x_values.length; i++) {
+                data += areas[i];
+                data += ",";
+
+                data += x_values[i];
+                data += ",";
+
+                data += regressionResult.m * areas[i] + regressionResult.n;
+
+                data += "\n";
+            }
+
+            window.regressionGraph =
+                new Dygraph(
+                    document.getElementById('regressionGraph'),
+                    data,
+                    {
+                        series: {
+                            'measured': {
+                                strokeWidth: 0.0,
+                                drawPoints: true,
+                                pointSize: 3,
+                                highlightCircleSize: 4
+                            },
+                            'regression': {
+                                strokeWidth: 1.0,
+                                drawPoints: true,
+                                pointSize: 1.5
+                            }
+                        }
+                    }
+                );
+
+        }
+    </script>
+
+{% endblock %}

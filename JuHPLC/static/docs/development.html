@@ -1,0 +1,304 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Development &mdash; JuHPLC 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> JuHPLC
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#webapp-webapp-settings-py-file">WebApp/Webapp/Settings.py file</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#databases">DATABASES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#static-root">STATIC_ROOT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#static-url">STATIC_URL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compress-enabled">COMPRESS_ENABLED</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chromium-path">CHROMIUM_PATH</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#session-save-every-request">SESSION_SAVE_EVERY_REQUEST</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#changing-mouse-behaviour">Changing Mouse-Behaviour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#changing-dygraphs-initialization">Changing Dygraphs-initialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#changing-the-peak-table">Changing the Peak-Table</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#changing-rendering-of-the-peak-table">Changing Rendering of the Peak-Table</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#changing-any-other-rendering-aspect">Changing any other rendering Aspect</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">JuHPLC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Development</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/development.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="development">
+<h1>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
+<p>This software relies on Django and Vue heavily. If you are not familiar with their respective concepts yet, I’d suggest to take a look at them before reading any further.</p>
+<div class="section" id="webapp-webapp-settings-py-file">
+<h2>WebApp/Webapp/Settings.py file<a class="headerlink" href="#webapp-webapp-settings-py-file" title="Permalink to this headline">¶</a></h2>
+<p>This file contains the django configuration.</p>
+<p>The most imporant configuration parameters here are the following:</p>
+<div class="section" id="databases">
+<h3>DATABASES<a class="headerlink" href="#databases" title="Permalink to this headline">¶</a></h3>
+<p>This parameter controls which Database-Backend will be used for persisting the data.</p>
+<p>The Default is to use an sqlite database for everything.</p>
+<p>Commented you will see an exmaple configuration for a MySQL/Mariadb-Backend.</p>
+<p>All Database-engines supported by Django are supported here, so feel free to play around with using PostgreSQL or any other of the supported backends.</p>
+</div>
+<div class="section" id="static-root">
+<h3>STATIC_ROOT<a class="headerlink" href="#static-root" title="Permalink to this headline">¶</a></h3>
+<p>This is the static directory that will be served by the Django-internal Webserver.</p>
+</div>
+<div class="section" id="static-url">
+<h3>STATIC_URL<a class="headerlink" href="#static-url" title="Permalink to this headline">¶</a></h3>
+<p>This is the URL of the static directory. This means by accessing <a class="reference external" href="http://localhost/static/">http://localhost/static/</a> you will be able to access the files from the static directory.</p>
+</div>
+<div class="section" id="compress-enabled">
+<h3>COMPRESS_ENABLED<a class="headerlink" href="#compress-enabled" title="Permalink to this headline">¶</a></h3>
+<p>This Option controls the compressing of included Javascript and Css files.</p>
+<p>This has to be <code class="docutils literal notranslate"><span class="pre">True</span></code> (default) to enable the html export, as the re requirements will be packed into the single html file and served as this.</p>
+<p>The Runtime-implications of this are neglectable since the additional time to compress the files is saved by only requiring one socket.</p>
+<p>During development you should set this to <code class="docutils literal notranslate"><span class="pre">False</span></code> to allow easier debugging.</p>
+</div>
+<div class="section" id="chromium-path">
+<h3>CHROMIUM_PATH<a class="headerlink" href="#chromium-path" title="Permalink to this headline">¶</a></h3>
+<p>This is the path to the chromium executable.</p>
+<p>If you want to use PDF exports, this is required to be set to a valid executable.</p>
+<p>On Linux-systems (default) this should point to <code class="docutils literal notranslate"><span class="pre">chromium-browser</span></code>.</p>
+<p>On Windows-systems this setting could point to <code class="docutils literal notranslate"><span class="pre">D:\\chrome-win32\\chrome.exe</span></code>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Double-backslashes are required to prevent misinterpretation as escape-sequence.</p>
+</div>
+</div>
+<div class="section" id="session-save-every-request">
+<h3>SESSION_SAVE_EVERY_REQUEST<a class="headerlink" href="#session-save-every-request" title="Permalink to this headline">¶</a></h3>
+<p>This setting makes sure user-sessions are refreshed with every request.</p>
+<p>This prevents unexpected session termination during normal operation.</p>
+<p>I’d suggest keeping this set to <code class="docutils literal notranslate"><span class="pre">True</span></code> (default). Only change this if you know what you’re doing.</p>
+</div>
+</div>
+<div class="section" id="changing-mouse-behaviour">
+<h2>Changing Mouse-Behaviour<a class="headerlink" href="#changing-mouse-behaviour" title="Permalink to this headline">¶</a></h2>
+<p>All interactions with the graphs are handled inside the Vue-Component dygraphs-graph.js located at <code class="docutils literal notranslate"><span class="pre">JuHPLC/static/js/JuHPLC/Vue-Components</span></code>.</p>
+<p>The interactionModel defined inside the mounted() method can be adjusted to personal preference.</p>
+<p>This model has been developed with the default dygraphs interaction model in mind, so all regular actions that work inside dygraphs still work as expected.</p>
+</div>
+<div class="section" id="changing-dygraphs-initialization">
+<h2>Changing Dygraphs-initialization<a class="headerlink" href="#changing-dygraphs-initialization" title="Permalink to this headline">¶</a></h2>
+<p>If you want to pass additional options to the dygraphs Object during initialization look for the line <code class="docutils literal notranslate"><span class="pre">this.$data._graph</span> <span class="pre">=</span> <span class="pre">new</span> <span class="pre">Dygraph(...)</span></code>.</p>
+</div>
+<div class="section" id="changing-the-peak-table">
+<h2>Changing the Peak-Table<a class="headerlink" href="#changing-the-peak-table" title="Permalink to this headline">¶</a></h2>
+<p>The Component of the Peak-Table is located at <code class="docutils literal notranslate"><span class="pre">JuHPLC/static/js/JuHPLC/Vue-Components/peak-table.js</span></code>.</p>
+<p>All of the Calculations for Peakarea, retention factor and similar are located in the <code class="docutils literal notranslate"><span class="pre">JuHPLC/static/js/JuHPLC/Peak.js</span></code> file. This should be included for proper functionality.</p>
+<div class="section" id="changing-rendering-of-the-peak-table">
+<h3>Changing Rendering of the Peak-Table<a class="headerlink" href="#changing-rendering-of-the-peak-table" title="Permalink to this headline">¶</a></h3>
+<p>If you want to change rendering aspects, this should happen in the peak-table.js file by calling the correct functions from Peak.js.</p>
+<p>Upon Creation of a row in the Peak-Table a SavitzkyGolayPeak object will be created inside the Vue-Component peak-table-row which can be used by accessing <code class="docutils literal notranslate"><span class="pre">this.$data._peak</span></code> inside this component.</p>
+</div>
+</div>
+<div class="section" id="changing-any-other-rendering-aspect">
+<h2>Changing any other rendering Aspect<a class="headerlink" href="#changing-any-other-rendering-aspect" title="Permalink to this headline">¶</a></h2>
+<p>By using Django-Views most other aspects are handled inside the respective view file located inside <code class="docutils literal notranslate"><span class="pre">JuHPLC/templates/</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ChromatogramDetails.html</span></code> Is the most important View here, where all of the Vue-Components are initialized, aswell as the chromatography menu-bar is added.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="usage.html" class="btn btn-neutral" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Volker Mauel, Dirk Bier.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

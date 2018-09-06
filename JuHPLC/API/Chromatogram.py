@@ -1,5 +1,8 @@
-from django.http import HttpResponse
+from django.forms import model_to_dict
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import permission_required
+from django.core import serializers
+import json
 
 
 from JuHPLC.models import *
@@ -22,3 +25,16 @@ def delete(request,chromatogramid):
     c.delete()
 
     return HttpResponse()
+
+def GetChromatogramsWithPeaksNamed(request,peakName):
+    result = []
+
+    c = Peak.objects.filter(Name__icontains=peakName).all()
+    for i in c:
+        result.append(JuHPLC.API.JSONChromatogram.JSONJuHPLCChromatogram(i.Chromatogram_id).__dict__)
+
+
+    return JsonResponse(
+        {
+            "chromatograms": json.dumps(result),
+        })

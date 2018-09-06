@@ -136,3 +136,7 @@ STATIC_URL = '/static/'
 COMPRESS_ENABLED = True
 
 CHROMIUM_PATH = "chromium-browser"
+
+# we want to have sliding expiration, so the session gets refreshed whenever a request occurs.
+# this way in most cases the users only have to login once
+SESSION_SAVE_EVERY_REQUEST = True

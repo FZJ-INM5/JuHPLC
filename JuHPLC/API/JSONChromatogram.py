@@ -1,9 +1,9 @@
 import JuHPLC.API.Chromatogram
 import JuHPLC.API.HplcData
 from JuHPLC.models import Chromatogram, Eluent, Solvent, Peak, HplcData, Baseline
+from django.db.models import Model
 
-
-class JSONJuHPLCChromatogram:
+class JSONJuHPLCChromatogram(Model):
 
     def __init__(self, id):
         chrom = Chromatogram.objects.get(pk=id)
@@ -72,7 +72,7 @@ class JSONJuHPLCEluent:
         self.Solvents = []
         for e in eluents:
             for s in Solvent.objects.filter(Eluent=e).all():
-                self.Solvents.append(JSONJuHPLCSolvent(s.Name, s.Percentage,e.id))
+                self.Solvents.append(JSONJuHPLCSolvent(s.Name, s.Percentage,e.id).__dict__)
 
 
 class JSONJuHPLCSolvent:
@@ -104,7 +104,7 @@ class JSONJuHPLCPeaks:
             if d.ChannelName not in peaksDataGrouped:
                 peaksDataGrouped[d.ChannelName] = []
 
-            peaksDataGrouped[d.ChannelName].append(JSONJuHPLCPeak(d.StartTime, d.EndTime, d.Name))
+            peaksDataGrouped[d.ChannelName].append(JSONJuHPLCPeak(d.StartTime, d.EndTime, d.Name).__dict__)
 
         self.Peaks = peaksDataGrouped
 

@@ -8,6 +8,16 @@ class Baseline {
      */
     constructor(data) {
         this.data = data;
+
+        this.x_values = [];
+        this.y_values = [];
+        var d = this.data.DatetimeValue.split(',');
+
+        for (let i = 0; i < d.length; i += 2) {
+            this.x_values.push(parseFloat(d[i]));
+            this.y_values.push(parseFloat(d[i + 1]));
+        }
+        this.ks = CSPL.getNaturalKs(this.x_values, this.y_values);
     }
 
     /**
@@ -15,34 +25,26 @@ class Baseline {
      * @param x
      */
     calculateAtPointX(x) {
-        var x_values = [];
-        var y_values = [];
-        var data = this.data.DatetimeValue.split(',');
 
-        for (let i = 0; i < data.length; i += 2) {
-            x_values.push(parseFloat(data[i]));
-            y_values.push(parseFloat(data[i + 1]));
-        }
 
         switch (this.data.Type) {
             case 'linear':
                 let i = 0;
-                for(i=0;i<x_values.length;i++){
-                    if(x_values[i] <= x && x_values[i+1] >= x) {
+                for(i=0;i<this.x_values.length;i++){
+                    if(this.x_values[i] <= x && this.x_values[i+1] >= x) {
                         break;
                     }
                 }
-                var x1 = x_values[ i ];
-                var y1 = y_values[ i ];
-                var x2 = x_values[i+1];
-                var y2 = y_values[i+1];
+                var x1 = this.x_values[ i ];
+                var y1 = this.y_values[ i ];
+                var x2 = this.x_values[i+1];
+                var y2 = this.y_values[i+1];
 
                 var res = (y2-y1)/(x2-x1)*(x-x1)+y1;
 
                 return res;
             case 'cubic-spline':
-                var ks = CSPL.getNaturalKs(x_values, y_values);
-                return CSPL.evalSpline(x,x_values,y_values,ks);
+                return CSPL.evalSpline(x,this.x_values,this.y_values,this.ks);
         }
     }
 

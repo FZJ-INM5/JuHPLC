@@ -28,6 +28,9 @@ def NewChromatogram(request):
     latestChrom=Chromatogram()
     eluents=[]
     solvents = []
+    channelOrderShift = "UV - 0, Counter - 30"
+    # 18F-Chemistry is used most often in our case, so set this as a sane default for decay correction calculation.
+    halfLife = "109"
     try:
         latestChrom = Chromatogram.objects.order_by("-Datetime").first()
         eluents = Eluent.objects.filter(Chromatogram=latestChrom)
@@ -39,6 +42,8 @@ def NewChromatogram(request):
                 solvents[i].append(s)
             i+=1
         factorsUnits=latestChrom.FactorsUnits
+        channelOrderShift=latestChrom.ChannelOrderShift
+        halfLife=latestChrom.HalfLife
     except Exception as exp:
         factorsUnits = "UV - 0.001 - µAu\r\nCounter - 1 - CPS"
 
@@ -46,6 +51,8 @@ def NewChromatogram(request):
         "FactorsUnits": factorsUnits,
         "LatestChrom":latestChrom,
         "solvents": solvents,
+        "ChannelOrderShift":channelOrderShift,
+        "HalfLife":halfLife
     })
 
 

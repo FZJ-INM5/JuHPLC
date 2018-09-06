@@ -31,11 +31,11 @@
         <!--<script src="/static/js/fontawesome-all.js" type="text/javascript" charset="utf-8"></script>-->
         <script src="/static/js/feather.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="/static/js/math.min.js" type="text/javascript" charset="utf-8"></script>
-        
+
         <script src="/static/js/penalized-least-squares.js" type="text/javascript" charset="utf-8"></script>
 
         <script src="/static/js/dygraphs-2.1.0.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="/static/js/dygraphs-synchronizer.min.js" type="text/javascript" charset="utf-8"></script>
+        <!--<script src="/static/js/dygraphs-synchronizer.min.js" type="text/javascript" charset="utf-8"></script>-->
 
         <script src="/static/js/graphcolors.js" type="text/javascript" charset="utf-8"></script>
         <script src="/static/js/JuHPLC/Baseline.js" type="text/javascript" charset="utf-8"></script>
@@ -43,9 +43,11 @@
         <script src="/static/js/JuHPLC/JuHPLC.js" type="text/javascript" charset="utf-8"></script>
         <script src="/static/js/JuHPLC/JuHPLC-Helpers.js" type="text/javascript" charset="utf-8"></script>
 
-        <script src="/static/js/iaea-nuclides.json" type="text/javascript" charset="utf-8"></script>
+        <!--<script src="/static/js/iaea-nuclides.json" type="text/javascript" charset="utf-8"></script>-->
 
-        <script src="/static/js/tensorflow.js" type="text/javascript" charset="utf-8"></script>
+        <!--<script src="/static/js/tensorflow.js" type="text/javascript" charset="utf-8"></script>-->
+
+        <script src="/static/js/JuHPLC/gauss.js" type="text/javascript" charset="utf-8"></script>
     {% endcompress %}
     <div id="app">
         <nav class="hidden-print navbar navbar-light navbar-expand-md fixed-top" style="background-color:white;">
@@ -145,18 +147,51 @@
                            aria-haspopup="true" aria-expanded="false">
                             <i data-feather="more-vertical" style="width: 22px;height: 22px;"></i>More</a>
                         <div class="dropdown-menu" aria-labelledby="dropdown02">
-                <span class="nav-link" href="#" id="viewSwitch" style="float:right;" data-toggle="tooltip"
-                      data-placement="bottom" title="View-Switch">
-                    <i style="width: 22px;height: 22px;" data-feather="more-vertical" id="viewSwitchIcon"></i> View-Switch
-                </span>
-                            <span class="nav-link" href="#" id="optionsBtn" style="float:right;" data-toggle="tooltip"
-                                  data-placement="bottom" title="Options+">
-                    <i style="width: 22px;height: 22px;" data-feather="settings" id="optionsBtnIcon"></i> Options
-                </span>
-                            <span class="nav-link"><input type="checkbox" id="syncGraphsCheckbox">Sync Graphs</span>
-                            <span class="nav-link btn btn-sm hplc-btn"><input type="file" id="fileInput"/></span>
+                            <table class="table small table-sm">
+                                <tr>
+                                    <th colspan="2">
+                                        Additional Options
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td><span class="nav-link" href="#" id="viewSwitch" style=""
+                                              data-toggle="tooltip"
+                                              data-placement="bottom" title="View-Switch">
+                                <i style="width: 22px;height: 22px;" data-feather="more-vertical"
+                                   id="viewSwitchIcon"></i> View-Switch
+                            </span></td>
+                                    <td>
+                                        <span class="nav-link" href="#" id="optionsBtn" style=""
+                                              data-toggle="tooltip"
+                                              data-placement="bottom" title="Options+">
+                                    <i style="width: 22px;height: 22px;" data-feather="settings"
+                                       id="optionsBtnIcon"></i> Options
+                            </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <p>Import Chromatogram</p>
+                                        <span class="nav-link btn btn-sm hplc-btn"><input type="file"
+                                                                                          id="fileInput"/></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <p>Import Calibration</p>
+                                        <span class="nav-link btn btn-sm hplc-btn"><input type="file"
+                                                                                          id="fileInputCalibration"/></span>
+                                    </td>
+                                </tr>
+                            </table>
+
                         </div>
                     </li>
+
+                    <a class="nav-link" href="/static/docs/index.html" id="helpBtn" data-toggle="tooltip" data-placement="bottom"
+                          title="Help" target="_blank">
+                    <i style="width: 22px;height: 22px;transform:rotate(45deg)" data-feather="help-circle"></i> Help
+                </a>
                 </ul>
 
             </div>
@@ -296,7 +331,7 @@
                 </div>
             </div>
         </div>
-<div id="fii"></div>
+        <div id="fii"></div>
 
         <!-- Modal -->
         <div class="modal fade" id="findPeaksModal" tabindex="-1" role="dialog" aria-labelledby="findPeaksModalLabel"
@@ -466,11 +501,11 @@
                     window.app.$eventHub.$emit('resizeGraphs');
                 }).tooltip();
 
-                $('#syncGraphsCheckbox').click(function (abc) {
+                /*$('#syncGraphsCheckbox').click(function (abc) {
                     setTimeout(function () {
                         window.syncGraphs();
                     }, 150);
-                });
+                });*/
 
                 $('#findPeaksModalOpen').click(function (abx) {
                     $('#findPeaksModalTargetGraphName').empty();
@@ -497,6 +532,10 @@
                     window.juhplc.scaleGraphX();
                 }).tooltip();
 
+                $('#heplBtn').click(function () {
+                    setTimeout(()=>{window.open(window.location.origin+'/static/docs/index.html', '_blank');},1);
+                }).tooltip();
+
                 $('#editBaselineBtn').tooltip();
 
                 $('#findPeaksModalDoFind').click(function () {
@@ -509,14 +548,12 @@
                     var result = new SavitzkyGolayPeakFinding(window.chromatogram.Data.Data[graphName][0], graphName).findPeaks(window.chromatogram.DeadTime)
                         .filter(function (a) {
                             return a.EndTime - a.StartTime > minWidth;
-                        })
-                        .filter(function (a, b) {
-                            var p = new SavitzkyGolayPeak(window.chromatogram.Data.Data[graphName], a.StartTime, a.EndTime, graphName, window.chromatogram);
-                            return p.calculatePeakArea() > minArea;
-                        })
-                        .filter(function (a) {
-                            return new SavitzkyGolayPeak(window.chromatogram.Data.Data[graphName], a.StartTime, a.EndTime, graphName, window.chromatogram).getPeakMaximum().val > minHeight;
+                        }).filter((a) => {
+                            var tmpPeak = new SavitzkyGolayPeak(window.chromatogram.Data.Data[graphName], a.StartTime, a.EndTime, graphName, window.chromatogram);
+                            return tmpPeak.calculatePeakArea() > minArea && tmpPeak.getPeakMaximum().val > minHeight;
                         });
+
+                    app.$eventHub.$emit('renamePeaksForCalibration');
 
                     Vue.set(window.chromatogram.Data.Peaks, graphName, result);
                     $('#findPeaksModal').modal('hide');
@@ -667,6 +704,10 @@
                             $('#editBaselineBtn').click();
                             data.preventDefault();
                         }
+                        if (data.key == "j" && data.ctrlKey == true && data.type == "keydown") {
+                            $('#helpBtn').click();
+                            data.preventDefault();
+                        }
                     });
 
                 } catch (err) {
@@ -684,7 +725,7 @@
             }
 
 
-            function syncGraphs() {
+            /*function syncGraphs() {
                 var shouldSync = $('#syncGraphsCheckbox')[0].checked;
                 if (window.sync !== null && window.sync !== undefined) {
                     window.sync.detach();
@@ -698,7 +739,7 @@
                         "zoom": true
                     });
                 }
-            }
+            }*/
 
 
             function initVue() {
@@ -720,11 +761,15 @@
                 console.log("ReadyState:" + document.readyState);
                 if (document.readyState === "complete") {
                     console.log("Ready, Initializing!");
+                    setTimeout(()=>{
+                        feather.replace();
                     initVue();
                     init();
                     initControls();
                     initLocalFileLoader();
-                    feather.replace()
+                    },1);
+
+
                 }
             };
 
@@ -737,7 +782,7 @@
 
                     var reader = new FileReader();
                     reader.onload = function (x) {
-                        if(file.name.endsWith(".json")) {
+                        if (file.name.endsWith(".json")) {
 
                             console.log("loading local .json file");
 
@@ -753,41 +798,130 @@
                             }
                         }
 
-                        if(file.name.endsWith(".asc")) {
+                        if (file.name.endsWith(".asc")) {
                             var fileContent = x.target.result;
                             console.log("loading local peaksimple file");
 
-                            Vue.set(window.chromatogram,"ChannelOrderShift","UV - 0");
+                            Vue.set(window.chromatogram, "ChannelOrderShift", "UV - 0");
 
                             //remove temporary data from current graohs and new ones
                             delete window.chromatogram.tmp;
-                            for (var i in window.chromatogram.Data.Peaks){
-                                window.chromatogram.Data.Peaks[i]=[];
+                            for (var i in window.chromatogram.Data.Peaks) {
+                                window.chromatogram.Data.Peaks[i] = [];
                             }
-                            for (var i in window.chromatogram.Data.Data){
-                                window.chromatogram.Data.Data[i]=[];
+                            for (var i in window.chromatogram.Data.Data) {
+                                window.chromatogram.Data.Data[i] = [];
                             }
-                            for (var i in window.chromatogram.Data.Data){
+                            for (var i in window.chromatogram.Data.Data) {
                                 delete window.chromatogram.Data.Baseline[i];
                             }
                             //end remove temporary data from current graphs and new ones
 
                             var lines = fileContent.split('\n');
                             var sampleRate = parseInt(lines[1].split('=')[1].toUpperCase().split('HZ')[0]);
-                            console.log("read sample-rate ",sampleRate," from peaksimple file");
+                            console.log("read sample-rate ", sampleRate, " from peaksimple file");
 
-                            var parsedData=
-                            lines.splice(3).map(x => parseInt(x)/1000);
+                            var parsedData =
+                                lines.splice(3).map(x => parseInt(x) / 1000);
 
                             console.log(parsedData);
 
-                            Vue.set(window.chromatogram,"SampleRate",sampleRate);
+                            Vue.set(window.chromatogram, "SampleRate", sampleRate);
 
-                            Vue.set(window.chromatogram.Data,"Data",{});
-                            Vue.set(window.chromatogram.Data.Data,"UV",[]);
-                            Vue.set(window.chromatogram.Data.Data["UV"],0,parsedData);
+                            Vue.set(window.chromatogram.Data, "Data", {});
+                            Vue.set(window.chromatogram.Data.Data, "UV", []);
+                            Vue.set(window.chromatogram.Data.Data["UV"], 0, parsedData);
 
                             app.$eventHub.$emit('resizeGraphs');
+                        }
+
+                        if (file.name.endsWith(".csv")) {
+                            var fileContent = x.target.result;
+                            console.log("loading local csv file");
+
+                            Vue.set(window.chromatogram, "ChannelOrderShift", "UV - 0, Counter - 0");
+
+                            //remove temporary data from current graohs and new ones
+                            delete window.chromatogram.tmp;
+                            for (var i in window.chromatogram.Data.Peaks) {
+                                window.chromatogram.Data.Peaks[i] = [];
+                            }
+                            for (var i in window.chromatogram.Data.Data) {
+                                window.chromatogram.Data.Data[i] = [];
+                            }
+                            for (var i in window.chromatogram.Data.Data) {
+                                delete window.chromatogram.Data.Baseline[i];
+                            }
+                            //end remove temporary data from current graphs and new ones
+
+                            var lines = fileContent.split('\n');
+
+                            var parsedData = lines;
+
+                            console.log(parsedData);
+                            var d = [];
+
+                            var header = lines[0].split(',');
+                            header.splice(0, 1);//remove time label
+                            for (var i = 0; i < header.length; i++) {
+                                d[i] = [];
+                            }
+
+                            for (var i = 1; i < lines.length; i++) {
+                                var split = lines[i].split(',');
+                                for (var j = 1; j < split.length; j++) {
+                                    d[j - 1].push(parseFloat(split[j]));
+                                }
+                            }
+
+                            //clear current data
+                            Vue.set(window.chromatogram.Data, "Data", {});
+
+                            var channelOrderShiftNew = "";
+                            for (var i = 0; i < header.length; i++) {
+                                channelOrderShiftNew += header[i] + " - 0";
+                                if (i < header.length - 1)
+                                    channelOrderShiftNew += ", ";
+                            }
+                            Vue.set(window.chromatogram, "ChannelOrderShift", channelOrderShiftNew);
+
+
+                            for (var i = 0; i < header.length; i++) {
+                                var currentHeader = header[i].trim();
+                                Vue.set(window.chromatogram.Data.Data, currentHeader, []);
+                                Vue.set(window.chromatogram.Data.Data[currentHeader], 0, d[i]);
+
+                            }
+
+
+                            app.$eventHub.$emit('resizeGraphs');
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+
+                var fileInput = document.getElementById('fileInputCalibration');
+                fileInput.addEventListener('change', function (e) {
+                    var file = fileInput.files[0];
+
+                    console.log(file);
+
+                    var reader = new FileReader();
+                    reader.onload = function (x) {
+                        if (file.name.endsWith(".json")) {
+
+                            console.log("loading local .json file - calibration data");
+
+                            var fileContentsAsJSON = JSON.parse(x.target.result);
+
+                            console.log(fileContentsAsJSON);
+
+                            Vue.set(window.chromatogram, "calibration", fileContentsAsJSON);
+
+                            app.$eventHub.$emit('renamePeaksForCalibration');
+
+                            //todo: foreach peak
+
                         }
                     };
                     reader.readAsText(file);

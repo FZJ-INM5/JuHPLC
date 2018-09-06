@@ -109,6 +109,6 @@ colors = [
 ];
 
 function getColor(index, trasparency) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colors[(index )%colors.length]);
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colors[(index) % colors.length]);
     return "rgba(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + "," + trasparency + ")";
 }

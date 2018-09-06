@@ -24,7 +24,10 @@ from JuHPLC.models import Chromatogram, Eluent, Solvent
 
 
 def ChromatogramImportDo(request, chromatogramid):
-    importCSVFileForChromatogram(request.FILES["csvFile"].read(), chromatogramid)
+    if request.FILES["csvFile"].name.endswith(".asc"):
+        importASCFileForChromatogram(request.FILES["csvFile"].read(), chromatogramid)
+    else:
+        importCSVFileForChromatogram(request.FILES["csvFile"].read(), chromatogramid)
     return redirect('ChromatogramDetails', id=request.POST.get("id", 0))
 
 
@@ -52,5 +55,26 @@ def importCSVFileForChromatogram(file, chromatogram_id):
             d.Value = float(linesplit[i])
             d.Datetime = t
             data.append(d)
+
+    HplcData.objects.bulk_create(data)
+
+def importASCFileForChromatogram(file, chromatogram_id):
+    chromatogram = Chromatogram.objects.get(pk=chromatogram_id)
+
+    normalized = file.decode("utf-8")
+    normalized = re.sub("\r\n", "|", normalized)
+    normalized = re.sub("\n", "|", normalized)
+    normalized = re.sub("\r", "|", normalized)
+
+    normalized_split = normalized.split('|')
+    data = []
+
+    for i in range(3,int(normalized_split[2].split('=')[1])):
+        d = HplcData()
+        d.ChannelName = "UV"
+        d.Chromatogram = chromatogram
+        d.Value = float(normalized_split[i])/1000
+        d.Datetime = i
+        data.append(d)
 
     HplcData.objects.bulk_create(data)

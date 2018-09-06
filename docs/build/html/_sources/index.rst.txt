@@ -1,0 +1,30 @@
+User Documentation
+==================
+
+.. toctree::
+   :maxdepth: 4
+   
+   :caption:User Documentation
+   getting_started
+   usage
+   development
+   
+Features
+________
+* Data aquisition with our arduino-based interface
+* Integrating peaks
+* Selecting peaks and see their relativ areas
+* Zooming into graphs synchronized (X-axis-scaling affects all graphs)
+* Keyboard-shortcuts for all important actions (hover over the buttons to find out more!)
+* Free axis-scaling
+* Export functionality in several formats (CSV, Peaksimple, HTML, PDF-Reports)
+* Automatic Peak-Finding based on Savitzky-Golay-Smoothing and filtering
+* Free Baseline-editing using supporting points both, linear and with cubic splines
+* Creation of Calibration-Datasets and applying them to measured chromatograms
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

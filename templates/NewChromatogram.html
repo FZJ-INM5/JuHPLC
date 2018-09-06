@@ -95,7 +95,7 @@
                 </div>
                 <div class="form-group">
                     <label for="HPLCNuclideHalfLife">Half Life (in minutes):</label>
-                    <input type="textbox" id="HPLCNuclideHalfLife" name="HPLCNuclideHalfLife">
+                    <input type="textbox" id="HPLCNuclideHalfLife" name="HPLCNuclideHalfLife" value="{{ HalfLife }}">
                 </div>
                 <div class="form-group" id="uvwavelength">
                     <label for="HPLCUVWaveLength">UV Wavelength (nm):</label>
@@ -134,7 +134,7 @@ Counter - 1 - CPS">{{ FactorsUnits }}</textarea>
                         channel and the first channel. (in seconds)<br/>Format: ChannelName1 - Shift,ChannelName2 -
                         Shift</label>
                     <input type="text" class="form-control" id="HPLCChannelOrderShift" name="HPLCChannelOrderShift"
-                           value="UV - 0, Counter - 30"
+                           value="{{ ChannelOrderShift }}"
                            placeholder="in Hz">
                 </div>
                 <div class="form-group">

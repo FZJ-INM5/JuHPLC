@@ -1,0 +1,440 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Usage &mdash; JuHPLC 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Getting Started" href="getting_started.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> JuHPLC
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#connecting-the-interface-hardware">Connecting the Interface-Hardware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#logging-in">Logging in</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-the-first-chromatogram">Creating the First Chromatogram</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#details-on-the-input-fields">Details on the Input fields</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sample-name">Sample Name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#column">Column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flow">Flow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#injection-volume">Injection Volume</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#concentration-concentration-unit">Concentration &amp; Concentration Unit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#acquire-counter-channel">Acquire Counter Channel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#half-life">Half Life</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#uv-wavelength">UV Wavelength</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#maximum-time-of-data-acquisition">Maximum time of data acquisition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sample-rate">Sample Rate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#comment">Comment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#factors-and-units">Factors and Units</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#channel-order-shift">Channel Order &amp; Shift</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#use-rheodyne-switch">Use Rheodyne Switch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#eluent">Eluent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#save">Save</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#the-user-interface">The User-Interface</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#starting-a-measurement-and-loading-data">Starting a Measurement and Loading Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stopping-a-measurement">Stopping a Measurement</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interacting-with-the-graphs-during-a-run">Interacting with the graphs during a run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#integrating-peaks">Integrating Peaks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#renaming-peaks">Renaming Peaks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#peak-area">Peak Area</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#comparing-peak-areas">Comparing Peak areas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#adjusting-the-deadtime">Adjusting the Deadtime</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#predefined-axis-scaling">Predefined axis scaling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deletion-of-peaks">Deletion of Peaks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finding-peaks">Finding Peaks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#saving-the-changes">Saving the Changes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#calibrations">Calibrations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-new-calibration">Creating a new Calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-a-calibration-to-match-peaks-to-compounds">Using a Calibration to match peaks to compounds</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">JuHPLC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Usage</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<p>After the initial installation you should be able to use your favorite Browser to load into the system.</p>
+<div class="section" id="connecting-the-interface-hardware">
+<h2>Connecting the Interface-Hardware<a class="headerlink" href="#connecting-the-interface-hardware" title="Permalink to this headline">¶</a></h2>
+<p>Using a regular USB a-to-b cable connect the Interface-Hardware equipped with the Shield to the Arduino. It should flash several times and keep the status LED lit up to indicate a ready state.</p>
+</div>
+<div class="section" id="logging-in">
+<h2>Logging in<a class="headerlink" href="#logging-in" title="Permalink to this headline">¶</a></h2>
+<p>In order to prevent anyone from deleting your data, you will have to log in with the account you created during the installation process, or one provided by your IT.</p>
+<p>In the Menu-Bar please select Login.</p>
+<p>Once you successfully logged in, you will see the Logout option along with the current Username on the right side of the menu-bar.</p>
+</div>
+<div class="section" id="creating-the-first-chromatogram">
+<h2>Creating the First Chromatogram<a class="headerlink" href="#creating-the-first-chromatogram" title="Permalink to this headline">¶</a></h2>
+<p>In the Menu-Bar select <em>New Chromatogram</em>.</p>
+<p>In the following screen you will be able to enter all the relevant data for later analysis aswell as a comment.</p>
+<div class="section" id="details-on-the-input-fields">
+<h3>Details on the Input fields<a class="headerlink" href="#details-on-the-input-fields" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="sample-name">
+<h4>Sample Name<a class="headerlink" href="#sample-name" title="Permalink to this headline">¶</a></h4>
+<p>This is the name of the sample you want to measure. Enter it to find a specific measurement later easier.</p>
+</div>
+<div class="section" id="column">
+<h4>Column<a class="headerlink" href="#column" title="Permalink to this headline">¶</a></h4>
+<p>Enter the type of Column you are going to use for the HPLC run.</p>
+<p>If you have any previous measurement, you will be offered a list of Columns to select from.</p>
+</div>
+<div class="section" id="flow">
+<h4>Flow<a class="headerlink" href="#flow" title="Permalink to this headline">¶</a></h4>
+<p>Enter the flow in ml/min that you will be using.</p>
+</div>
+<div class="section" id="injection-volume">
+<h4>Injection Volume<a class="headerlink" href="#injection-volume" title="Permalink to this headline">¶</a></h4>
+<p>Enter the injection volume in µl.</p>
+</div>
+<div class="section" id="concentration-concentration-unit">
+<h4>Concentration &amp; Concentration Unit<a class="headerlink" href="#concentration-concentration-unit" title="Permalink to this headline">¶</a></h4>
+<p>Enter the Concentration of your Sample and the respective unit.</p>
+</div>
+<div class="section" id="acquire-counter-channel">
+<h4>Acquire Counter Channel<a class="headerlink" href="#acquire-counter-channel" title="Permalink to this headline">¶</a></h4>
+<p>Here you decide whether you want to make an UV-only run or if you want to measure the Counter-Channel too.</p>
+</div>
+<div class="section" id="half-life">
+<h4>Half Life<a class="headerlink" href="#half-life" title="Permalink to this headline">¶</a></h4>
+<p>Please enter the half life of the radio nuclide you will be measuring. This allows you to get decay-corrected values (corrected to the start of the measurement) for peak areas.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Even if you are doing UV-Only runs, you will have to enter a Half Life. Set it to the most oftenly used nuclide to avoid forgetting this later.</p>
+</div>
+</div>
+<div class="section" id="uv-wavelength">
+<h4>UV Wavelength<a class="headerlink" href="#uv-wavelength" title="Permalink to this headline">¶</a></h4>
+<p>Please enter the UV Wavelength at which the detector will be measuring.</p>
+</div>
+<div class="section" id="maximum-time-of-data-acquisition">
+<h4>Maximum time of data acquisition<a class="headerlink" href="#maximum-time-of-data-acquisition" title="Permalink to this headline">¶</a></h4>
+<p>You can limit the time data will be acquired by setting this to any value other than 0.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you set this, there is currently NO way to extend it during a run. Keep this in mind, and rather stop manually if you are not sure when your peaks will elute.</p>
+</div>
+</div>
+<div class="section" id="sample-rate">
+<h4>Sample Rate<a class="headerlink" href="#sample-rate" title="Permalink to this headline">¶</a></h4>
+<p>Set the Sampling Rate of the interface hardware. Since with our provided Hardware decays will be counted, we’ve had good results with a Sample Rate of 1 Hz. Up to a Sampling Rate of about 3 the Hardware still is pretty time-consistent, upwards of 4 it tends to drift. That drift is constant for the system itself, so runs made are comparable, but should be taken with a grain of salt.</p>
+</div>
+<div class="section" id="comment">
+<h4>Comment<a class="headerlink" href="#comment" title="Permalink to this headline">¶</a></h4>
+<p>You can enter any comment you might find useful in the future here. This can be changed at a later point to extend it wtih more useful information such as starting activity and yield of preparative HPLC.</p>
+</div>
+<div class="section" id="factors-and-units">
+<h4>Factors and Units<a class="headerlink" href="#factors-and-units" title="Permalink to this headline">¶</a></h4>
+<p>This section can be used to Scale values by a factor. Also it names the Units which will be measured and later on these Names will be used in any reports. If you are not sure if the defaults fit your needs, keep them and make a testing run first.</p>
+</div>
+<div class="section" id="channel-order-shift">
+<h4>Channel Order &amp; Shift<a class="headerlink" href="#channel-order-shift" title="Permalink to this headline">¶</a></h4>
+<p>This defines the direction of Flow in your HPLC system. The first detector usually is the UV detector, and the offset between it and the previous detector is obviously 0 (since there is no previous one). The second detector in our systems is the Counter, which could have a delay of 30 seconds.</p>
+<p>This will be used to position the graphs correctly on top of each other. You can verify this functionality by looking at the first x seconds in a measurement. The following channel(s) won’t have any data during that time yet.</p>
+</div>
+<div class="section" id="use-rheodyne-switch">
+<h4>Use Rheodyne Switch<a class="headerlink" href="#use-rheodyne-switch" title="Permalink to this headline">¶</a></h4>
+<p>This defines if your injection valve has an electrical contact switch which will be used to start a measurement. If you do NOT have one, leave this unchecked. You will have to start the measurement manually by clicking the button or pressing the F4 key on your keyboard.</p>
+</div>
+<div class="section" id="eluent">
+<h4>Eluent<a class="headerlink" href="#eluent" title="Permalink to this headline">¶</a></h4>
+<p>Enter the eluents you are using in this HPLC run along with their concentration.</p>
+</div>
+<div class="section" id="save">
+<h4>Save<a class="headerlink" href="#save" title="Permalink to this headline">¶</a></h4>
+<p>Finally press the save button.</p>
+</div>
+</div>
+<div class="section" id="the-user-interface">
+<h3>The User-Interface<a class="headerlink" href="#the-user-interface" title="Permalink to this headline">¶</a></h3>
+<p>Upon loading a chromatogram or creating a new one by entering the information mentions above, you will be presented with the details view.</p>
+<p>Here you can interact with the data.</p>
+<div class="section" id="starting-a-measurement-and-loading-data">
+<h4>Starting a Measurement and Loading Data<a class="headerlink" href="#starting-a-measurement-and-loading-data" title="Permalink to this headline">¶</a></h4>
+<p>If you have no data in the chromatogram, you can select the interface-hardware to use from a dropdown, or import a CSV file (header has to be present).</p>
+<p>Press the <code class="docutils literal notranslate"><span class="pre">Start</span></code> Button to start the Measurement. The interface-hardware will begin initializing and shortly after you will see your data coming in.</p>
+<p>If you previously selected to use the Rheodyne Switch, data acquisition will be paused until the valve is in the inject-position. Please use the injection valve to initiate the start of the measurement</p>
+</div>
+<div class="section" id="stopping-a-measurement">
+<h4>Stopping a Measurement<a class="headerlink" href="#stopping-a-measurement" title="Permalink to this headline">¶</a></h4>
+<p>If you have previously selected to use the Rheodyne Switch, you can put your injection valve into load position again, inject the new sample and turn the valve into inject position.</p>
+<p>This will result in a copy of the previous run being made. The comment will be adjusted to include the Run number (e.g. Run: 3).</p>
+<p>At any point you will be able to manually stop the run by pressing the <code class="docutils literal notranslate"><span class="pre">Stop</span></code> Button.</p>
+</div>
+<div class="section" id="interacting-with-the-graphs-during-a-run">
+<h4>Interacting with the graphs during a run<a class="headerlink" href="#interacting-with-the-graphs-during-a-run" title="Permalink to this headline">¶</a></h4>
+<p>You can interact with the graphs during a run. Please remember to press the save button to make sure any changes, such as peak integration, are saved. Pressing the <code class="docutils literal notranslate"><span class="pre">Stop</span></code> Button without saving the changes before will result in discarding the changes.</p>
+<p>You can zoom into graphs by using drag&amp;drop over a specific region in the graph you want to inspect closer.</p>
+<p>Zooming in general happens either in X or in Y direction.</p>
+<p>A double-click will reset the zoom back to where it was initially, making sure all data is visible.</p>
+</div>
+<div class="section" id="integrating-peaks">
+<h4>Integrating Peaks<a class="headerlink" href="#integrating-peaks" title="Permalink to this headline">¶</a></h4>
+<p>You can integrate peaks by doing a drag&amp;drop action with the right mouse button over the portion of the graph you want to integrate.</p>
+<p>A point will indicate where the starting position of the peak will be before you right-click.</p>
+<p>A Preview of the Peak will be shown to you while you keep the right mouse button pressed.</p>
+</div>
+<div class="section" id="renaming-peaks">
+<h4>Renaming Peaks<a class="headerlink" href="#renaming-peaks" title="Permalink to this headline">¶</a></h4>
+<p>You can manually rename the peak. If no name is given, or a peak is named <code class="docutils literal notranslate"><span class="pre">undefined</span></code>, it’s number will instead be shown as the annotation.</p>
+</div>
+<div class="section" id="peak-area">
+<h4>Peak Area<a class="headerlink" href="#peak-area" title="Permalink to this headline">¶</a></h4>
+<p>Peak Area is calculated as the area between the starting point of the peak and the ending point of a peak. If no manual baseline adjustment has been done, there will be a linear regression between the starting and the ending point of the peak and the graph.</p>
+<p>If you integrate a peak in the Counter-channel, the value in brackets will be the decay-corrected values to the beginning of the run.</p>
+</div>
+<div class="section" id="comparing-peak-areas">
+<h4>Comparing Peak areas<a class="headerlink" href="#comparing-peak-areas" title="Permalink to this headline">¶</a></h4>
+<p>You can compare different peak areas in the same graph by checking the checkbox in front of them. The last column of the Peak-Table will be adjusted to reflect the respective relative peak area of all selected peaks inside this graph.</p>
+</div>
+<div class="section" id="adjusting-the-deadtime">
+<h4>Adjusting the Deadtime<a class="headerlink" href="#adjusting-the-deadtime" title="Permalink to this headline">¶</a></h4>
+<p>You can manually adjust the deadtime of the chromatogram by using the Button <code class="docutils literal notranslate"><span class="pre">Deadtime</span> <span class="pre">Selection</span></code> and clicking inside the graph where you know the deadtime is over.</p>
+<p>You can see that if you chose a different deadtime, that the retention factor (k’) will be adjusted accordingly.</p>
+<p>Remember to deactive the <code class="docutils literal notranslate"><span class="pre">Deadtime</span> <span class="pre">Selection</span></code> mode once you are done with selecting the deadtime.</p>
+</div>
+<div class="section" id="predefined-axis-scaling">
+<h4>Predefined axis scaling<a class="headerlink" href="#predefined-axis-scaling" title="Permalink to this headline">¶</a></h4>
+<p>Especially for known products and preparative HPLC it’s useful to scale the graphs into a well-known region. This is possible for both axis. Using Ctrl+X to scale the X-Axis (same for all graphs) and Ctrl+Y to scale a graphs Y-axis you can achieve that. It’s also possible to reach that option from the menu bar.</p>
+</div>
+<div class="section" id="deletion-of-peaks">
+<h4>Deletion of Peaks<a class="headerlink" href="#deletion-of-peaks" title="Permalink to this headline">¶</a></h4>
+<p>Peaks can be deleted by using the Delete button in the Peak-Table.</p>
+<p>If you want to delete all peaks at once (e.g. after a failed attempt of automatic peak finding) you can use the button in the menu bar.</p>
+</div>
+<div class="section" id="finding-peaks">
+<h4>Finding Peaks<a class="headerlink" href="#finding-peaks" title="Permalink to this headline">¶</a></h4>
+<p>Based on the Savitzky-Golay-Filtering an automatic peak finding method has been implemented in the software to assist the user in searching for specific peaks. Using Ctrl+F or the <code class="docutils literal notranslate"><span class="pre">Find</span> <span class="pre">Peaks</span></code> Button in the menu bar, you can search for peaks fulfilling minimum criterias such as <em>Minimum peak width</em>, <em>Minimum Peak Height</em> and <em>Minimum Peak Area</em>.</p>
+<p>Peak finding will work only on one graph at a time.</p>
+</div>
+<div class="section" id="saving-the-changes">
+<h4>Saving the Changes<a class="headerlink" href="#saving-the-changes" title="Permalink to this headline">¶</a></h4>
+<p>Remember to save your changes once you are done!</p>
+<p>After saving it’s possible to download all of the chromatogram as an HTML file, you can send via e-mail to a collegue, containing the full software. Anyone with a browser can take a look at such a file, zoom into graphs or modify and compare peaks.</p>
+</div>
+</div>
+</div>
+<div class="section" id="calibrations">
+<h2>Calibrations<a class="headerlink" href="#calibrations" title="Permalink to this headline">¶</a></h2>
+<p>In order to create a calibration (or a set containing multiple calibrations) please integrate the peaks in the graphs you want to use for the calibration curve and save these.</p>
+<p>It is also important to use the correct Concentation and Unit in these runs, as the calculation will be based on the data filled in there.</p>
+<p>Multiple Calibrations can be exported as a set by checking the checkbox on the calibrations site and clicking export.</p>
+</div>
+<div class="section" id="creating-a-new-calibration">
+<h2>Creating a new Calibration<a class="headerlink" href="#creating-a-new-calibration" title="Permalink to this headline">¶</a></h2>
+<p>Select the Calibration Site and click new.</p>
+<p>Enter the name you gave the peak. E.g. Iodtubercidin. For every Chromatogram you want to use in this calibration please select the <code class="docutils literal notranslate"><span class="pre">Use</span></code> checkbox on the right side.</p>
+<p>Upon selecting the chromatograms at the end of the page you will find the calibration data (Slope, Y-Intercept, correlation coefficient) Along with the UV Wavelength, the Column, the Concentation Unit, the Sample Name, the retention factor and the allowed error margin.</p>
+<p>Clicking <code class="docutils literal notranslate"><span class="pre">Submit</span></code> will save this data on the server and allow you to export a set of calibrations as explained in the previous section.</p>
+<p>This part has been decoupled from the server on purpose, as this allows anyone to use their own calibrations, even when working offline.</p>
+<p>You can integrate peaks before applying the calibration data or afterwards, the results will be the same.</p>
+</div>
+<div class="section" id="using-a-calibration-to-match-peaks-to-compounds">
+<h2>Using a Calibration to match peaks to compounds<a class="headerlink" href="#using-a-calibration-to-match-peaks-to-compounds" title="Permalink to this headline">¶</a></h2>
+<p>After exporting you will be offered to download a .json file.</p>
+<p>Inside any chromatogram you can use the menu-bar to open the Options-Box.  There is a File-Selection for loading calibration data.  Load the previously exported data there.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="getting_started.html" class="btn btn-neutral" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Volker Mauel, Dirk Bier.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

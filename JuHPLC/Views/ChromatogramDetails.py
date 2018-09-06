@@ -1,37 +1,25 @@
-import jsonpickle
-from django.shortcuts import render
-from django.http import HttpResponse
+import subprocess
+import tempfile
 
-from JuHPLC.API import HplcData
-from JuHPLC.API.JSONChromatogram import JSONJuHPLCChromatogram
-from JuHPLC.models import *
-import datetime
+import jsonpickle
+import json
 import serial
 import serial.tools.list_ports
-import time
-import sys
-import re
-import glob
-import json
-import os
-import subprocess
-from django.shortcuts import redirect
-from JuHPLC.SerialCommunication.MicroControllerManager import MicroControllerManager
-from JuHPLC.HelperClass import HelperClass
-from django.views.decorators.csrf import csrf_exempt
-from django.core.serializers.json import DjangoJSONEncoder
-from django.core.serializers import serialize
-from django.contrib.auth.decorators import permission_required
+from django.http import HttpResponse
+from django.shortcuts import render
+
+import WebApp.settings
 from JuHPLC.API.JSONChromatogram import JSONJuHPLCChromatogram
 from JuHPLC.HelperClass import HelperClass
+from JuHPLC.SerialCommunication.MicroControllerManager import MicroControllerManager
 from JuHPLC.models import Chromatogram, Eluent, Solvent
-import WebApp.settings
-import tempfile
+
 
 def ChromatogramDetails(request, id):
     chrom = Chromatogram.objects.get(pk=id)
-    ports = serial.tools.list_ports.comports()
     running = MicroControllerManager.getinstance().chromatogramhasactiveacquisition(chrom)
+
+    ports = []
 
     eluents = Eluent.objects.filter(Chromatogram=chrom).all()
     solvents = []
@@ -40,12 +28,12 @@ def ChromatogramDetails(request, id):
         for s in Solvent.objects.filter(Eluent=e).all():
             solvents.append(s)
 
-
-
-    jc=JSONJuHPLCChromatogram(id)
-    jchroma = jsonpickle.encode(jc,unpicklable=False,max_depth=555,keys=True,warn=True)
+    jc = JSONJuHPLCChromatogram(id)
+    jchroma = json.dumps(jc.__dict__)
 
     hasdata = "Data" in jc.Data and len(jc.Data["Data"]) > 0
+    if not hasdata and not running:
+        ports = serial.tools.list_ports.comports()
     return render(request, "ChromatogramDetails.html", {
         "chromatogram": chrom,
         "num": id,
