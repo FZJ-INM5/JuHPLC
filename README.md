@@ -2,7 +2,7 @@
 
 This project allows using chromatography on imported files (csv) and data aquisition from a compatible hardware device.
 
-.. |Flat Badge| image:: https://readthedocs.org/projects/juhplc/badge/?version=latest&style=flat
+![Flat Badge](https://readthedocs.org/projects/juhplc/badge/?version=latest&style=flat)
 
 ## Getting Started
 
