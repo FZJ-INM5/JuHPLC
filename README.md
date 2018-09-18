@@ -4,6 +4,9 @@ This project allows using chromatography on imported files (csv) and data aquisi
 
 ![Flat Badge](https://readthedocs.org/projects/juhplc/badge/?version=latest&style=flat)
 
+## Hardware
+For more details on the Hardware, please click [here](https://github.com/FZJ-INM5/JuHPLC-Hardware)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
