@@ -8,6 +8,7 @@ This project allows using chromatography on imported files (csv) and data aquisi
 
 There are some Demo-Files included, which require no installation and will give you an idea of our software.
 * [Demo1](https://fzj-inm5.github.io/JuHPLC-Demo1.html)
+* [Demo2](https://fzj-inm5.github.io/JuHPLC-Demo2.html)
 
 ## Hardware
 For more details on the Hardware, please click [here](https://github.com/FZJ-INM5/JuHPLC-Hardware)
