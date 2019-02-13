@@ -34,6 +34,16 @@
     max-width:100px;
 }
 
+.annotationActive{
+    color:red !important;
+    border-color:red !important;
+    font-weight: 800 !important;
+}
+
+.chromatogramNavbar{
+    background-color:white;
+}
+
 @media screen {
     .peakTable {
         max-height: 300px;
@@ -102,6 +112,10 @@
 
     td {
         page-break-inside: avoid;
+    }
+
+    input,textarea{
+        border-color:transparent;
     }
 
     .hidden-print {

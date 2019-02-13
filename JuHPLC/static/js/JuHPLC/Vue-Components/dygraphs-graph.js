@@ -1,7 +1,8 @@
 Vue.component('dygraphs-graph', {
     props: {
         chromatogram: {},
-        graphname: ""
+        graphname: "",
+        activePeakCopy:null
     },
     data() {
         return {
@@ -23,6 +24,18 @@ Vue.component('dygraphs-graph', {
             var starttime = currentPeak.StartTime;
             var endtime = currentPeak.EndTime;
             var farbe = getColor(peakIdx, 0.5);
+
+            if(starttime == endtime){
+                endtime=starttime+1;
+                currentPeak.EndTime=endtime;
+            }
+
+            if(starttime > endtime){
+                let tmp = starttime;
+                starttime=endtime;
+                endtime=tmp;
+            }
+
 
 
             var ctx = canvas;
@@ -158,6 +171,9 @@ Vue.component('dygraphs-graph', {
                 return;
             }
 
+
+			var marker = c.Data.Marker;
+
             //draw window.chromatogram.DeadTime here if is set
             if (c.DeadTime != -1) {
                 var bottom_left = g.toDomCoords(c.DeadTime, -200000);
@@ -169,6 +185,24 @@ Vue.component('dygraphs-graph', {
                 canvas.fillRect(left, area.y, right - left, area.h);
             }
             //end draw window.chromatogram.DeadTime
+
+			for(var i=0;i<marker.length;i++){
+				var res = marker[i].Time;
+				var bottom_left = g.toDomCoords(res, -200000);
+                var top_right = g.toDomCoords(res + 500, i*10);
+                top_right[0] = bottom_left[0] + 1.5;
+                var left = bottom_left[0];
+                var right = top_right[0];
+                canvas.fillStyle = "rgba(255, 0, 0, 1)";
+                //canvas.fillRect(left, area.y, right - left, area.h);
+				canvas.fillRect(left, 10*(i+1), right - left, area.h);
+
+
+				canvas.font="11px Arial";
+				canvas.fillText(marker[i].Text,bottom_left[0]+5,11*(i+1));
+			}
+
+
 
             //get baseline object
             if (c.Data.Baseline !== undefined
@@ -255,6 +289,11 @@ Vue.component('dygraphs-graph', {
                 } else {
                     shorttext = curr.Name;
                 }
+                let myCssClass = "";
+                if(typeof(curr.active) !== 'undefined' && curr.active){
+
+                    myCssClass = "annotationActive";
+                }
 
                 annotations.push({
                     series: this.graphname,
@@ -262,7 +301,8 @@ Vue.component('dygraphs-graph', {
                     shortText: shorttext,
                     text: curr.Name,
                     tickHeight: 10,
-                    width: shorttext.length * 9 + 10
+                    width: shorttext.length * 9 + 10,
+                    cssClass:myCssClass
                 });
             }
             return annotations;
@@ -294,8 +334,11 @@ Vue.component('dygraphs-graph', {
                 graphOptions.valueRange = null;
             }
             graphOptions.file = transformDataToArray(this.chromatogram, this.graphname);
-
-            g.resize($('#dygraphs-graph' + this._uid).parent().width(), $('#dygraphs-graph' + this._uid).parent().height());
+            let widthfactor=0.990;
+            if(window.matchMedia("print").matches){
+                widthfactor = 1;
+            }
+            g.resize($('body').width()*widthfactor, $('#dygraphs-graph' + this._uid).parent().height());
 
             $('#fii').innerHtml = $($('.peakTable').children()[1]).width();
 
@@ -323,6 +366,48 @@ Vue.component('dygraphs-graph', {
         },
         unhighlightCallback: function (event) {
             app.$eventHub.$emit('clearSelection', {});
+        },
+        annotationClickHandler:function(annotation,point,dygraph,event){ // get the peak which was clicked by filtering for the name, starttime and endtime
+                var currentPeak = dygraph.chromatogram.Data.Peaks[dygraph.graphname]
+                    .filter(x => {
+                        return x.Name === annotation.text
+                        && annotation.x <= x.EndTime
+                        && annotation.x >= x.StartTime;
+                    })[0];
+
+                //set all other peaks that might be active to inactive
+                dygraph.chromatogram.Data.Peaks[dygraph.graphname]
+                    .filter(x => {
+                        return x.active && x.StartTime != currentPeak.StartTime && x.EndTime != currentPeak.EndTime;
+                    }).map(x => {
+                        x.active=false;
+                        return true;
+                    });
+
+                //get the index of currentPeak
+                var idx = dygraph.chromatogram.Data.Peaks[dygraph.graphname].indexOf(currentPeak);
+
+                //update the active flag on the peak using vue.js's set method. if id doesn't exist yet, set it to true.
+                // if it does exist, toggle it
+                if(typeof(dygraph.chromatogram.Data.Peaks[dygraph.graphname][idx].active) === 'undefined') {
+                    Vue.set(dygraph.chromatogram.Data.Peaks[dygraph.graphname][idx], 'active', true);
+                }else{
+                    Vue.set(dygraph.chromatogram.Data.Peaks[dygraph.graphname][idx], 'active', !dygraph.chromatogram.Data.Peaks[dygraph.graphname][idx].active);
+                }
+
+                if(dygraph.chromatogram.Data.Peaks[dygraph.graphname][idx].active){
+                    dygraph.vueObject.activePeakCopy = currentPeak;
+                    dygraph.vueObject.activePeakCopy.beforeStartTime=currentPeak.StartTime;
+                    dygraph.vueObject.activePeakCopy.beforeEndTime=currentPeak.EndTime;
+                }else{
+                    dygraph.vueObject.activePeakCopy = null;
+                }
+
+                // do more with it, currently debug logging
+                console.log(annotation);
+                console.log(point);
+                console.log(dygraph);
+                console.log(event);
         }
     },
     mounted() {
@@ -344,6 +429,15 @@ Vue.component('dygraphs-graph', {
                     context.dragEndX = context.dragEndY = null;
                     context.destroy();
                     //endcleanup
+
+                    if(window.chatSocket != null) {
+                        window.chatSocket.send(JSON.stringify({
+                            type: 'setDeadTime',
+                            sender: window.channel_name,
+                            DeadTime: this.chromatogram.DeadTime
+                        }));
+                    }
+
                     return;
                 }
 
@@ -362,7 +456,7 @@ Vue.component('dygraphs-graph', {
 
                         var d = distanceFromChart(event, g);
                         var c = g.chromatogram;
-                        if (d < 100) {
+
                             if (event.buttons == 1) {
                                 Dygraph.moveZoom(event, g, context);
                             } else {
@@ -377,31 +471,43 @@ Vue.component('dygraphs-graph', {
                                 }
                                 //end get baseline object
 
-                                console.log(context.dragStartX, context.dragEndX, event);
+
                                 var start = Math.round(g.toDataXCoord(context.dragStartX));
                                 var end = Math.round(g.toDataXCoord(context.dragEndX));
 
-                                if (start > end) {
-                                    var tmp = end;
-                                    end = start;
-                                    start = tmp;
+
+                                if(g.vueObject.activePeakCopy != null){
+                                    console.log("clientX",event.clientX,"start:",g.vueObject.activePeakCopy.StartTime,"ende:",g.vueObject.activePeakCopy.EndTime);
+                                    if(Math.abs(start-g.vueObject.activePeakCopy.beforeStartTime) < Math.abs(start-g.vueObject.activePeakCopy.beforeEndTime)){
+                                        g.vueObject.activePeakCopy.StartTime=end;
+                                    }else{
+                                        g.vueObject.activePeakCopy.EndTime=end;
+                                    }
+
+                                }else{
+                                    if (start > end) {
+                                        var tmp = end;
+                                        end = start;
+                                        start = tmp;
+                                    }
+                                    let idx = 0;
+                                    if(typeof(c.Data.Peaks[g.graphname]) !== 'undefined'){
+                                        idx=c.Data.Peaks[g.graphname].length;
+                                    }
+
+                                    g._drawPeakPreview(c, idx, {
+                                        "StartTime": start,
+                                        "EndTime": end,
+                                        "Mode": "default",
+                                        "Name": "undefined"
+                                    }, g, g.canvas_ctx_, baseLine);
                                 }
-                                g._drawPeakPreview(c, c.Data.Peaks[g.graphname].length, {
-                                    "StartTime": start,
-                                    "EndTime": end,
-                                    "Mode": "default",
-                                    "Name": "undefined"
-                                }, g, g.canvas_ctx_, baseLine);
                             }
 
-                        } else {
-                            if (context.dragEndX !== null) {
-                                context.dragEndX = null;
-                                context.dragEndY = null;
-                                g.clearZoomRect_();
-                            }
-                        }
+
+
                     } else if (context.isPanning) {
+                        console.log("panning");
                         Dygraph.movePan(event, g, context);
                     }
                 };
@@ -409,7 +515,6 @@ Vue.component('dygraphs-graph', {
                     if (context.isZooming) {
                         if (context.dragEndX !== null) {
                             if (event.button == 2 && !g.$rootData.editBaseline) {
-
 
                                 var start = Math.round(g.toDataXCoord(context.dragStartX));
                                 var end = Math.round(g.toDataXCoord(context.dragEndX));
@@ -419,7 +524,6 @@ Vue.component('dygraphs-graph', {
                                     end = Math.round(g.toDataXCoord(context.dragStartX));
                                     start = Math.round(g.toDataXCoord(context.dragEndX));
                                 }
-
 
                                 //check if we already have a Peaks object, if not, set it to an empty list
                                 if (g.chromatogram.Data.Peaks == null) {
@@ -431,14 +535,42 @@ Vue.component('dygraphs-graph', {
                                     Vue.set(g.chromatogram.Data.Peaks, g.graphname, []);
                                 }
 
-                                console.log("adding peak from ", start, " to ", end, " to graph ", g.graphname);
+                                 if(g.vueObject.activePeakCopy != null){
+                                    if(window.chatSocket != null) {
+                                        window.chatSocket.send(JSON.stringify({
+                                            type: 'adjustPeak',
+                                            channel: g.graphname,
+                                            data:g.vueObject.activePeakCopy
+                                        }));
+                                    }
+                                    g.vueObject.activePeakCopy.beforeStartTime=g.vueObject.activePeakCopy.StartTime;
+                                    g.vueObject.activePeakCopy.beforeEndTime=g.vueObject.activePeakCopy.EndTime;
 
-                                g.chromatogram.Data.Peaks[g.graphname].push({
-                                    "StartTime": start,
-                                    "EndTime": end,
-                                    "Mode": "default",
-                                    "Name": "undefined"
-                                });
+                                }else {
+                                     console.log("adding peak from ", start, " to ", end, " to graph ", g.graphname);
+
+                                     g.chromatogram.Data.Peaks[g.graphname].push({
+                                         "StartTime": start,
+                                         "EndTime": end,
+                                         "Mode": "default",
+                                         "Name": "undefined"
+                                     });
+
+                                     if(window.chatSocket != null){
+                                        window.chatSocket.send(JSON.stringify({
+                                            type: 'addPeak',
+                                            channel: g.graphname,
+                                            data:{
+                                                    "StartTime": start,
+                                                    "EndTime": end,
+                                                    "Mode": "default",
+                                                    "Name": "undefined"
+                                                }
+                                            }));
+                                    }
+                                 }
+
+
 
                                 g.vueObject.$eventHub.$emit('renamePeaksForCalibration');
 
@@ -759,6 +891,7 @@ Vue.component('dygraphs-graph', {
             highlightCallback: this.highlightCallback,
             unhighlightCallback: this.unhighlightCallback,
             interactionModel: this.interactionModel,
+            annotationClickHandler:this.annotationClickHandler,
             ylabel: this.graphname + "( " + this.chromatogram.Data.Units[this.graphname] + " )",
             axes: {
                 x: {
@@ -768,8 +901,8 @@ Vue.component('dygraphs-graph', {
                 }
             },
             labels: ["x", this.graphname],
-            pixelRatio: pixelratio
-
+            pixelRatio: pixelratio,
+            showRoller:true
         });
 
         this.$data._graph._drawPeakPreview = this._drawPeakPreview;
@@ -785,6 +918,17 @@ Vue.component('dygraphs-graph', {
          * Autorefresh on new/changed Peaks
          */
         this.$watch(() => chromatogram.Data.Peaks[this.graphname],
+            () => this._refreshGraph({
+                keepXAxis: true,
+                keepYAxis: true
+            }), {
+                deep: true
+            });
+
+        /**
+         * Autorefresh on new Markers if module enabled
+         */
+        this.$watch(() => chromatogram.Data.Marker,
             () => this._refreshGraph({
                 keepXAxis: true,
                 keepYAxis: true
@@ -890,8 +1034,6 @@ Vue.component('dygraphs-graph', {
                 if (this.$data._graph.colors_[0] != x.color) {
                     console.log("setting new color ", x.color, " on ", x.channelName);
                     this.$data._graph.updateOptions({color: x.color});
-                } else {
-                    console.log("already have color ", x.color, " on ", x.channelName);
                 }
             }
         });

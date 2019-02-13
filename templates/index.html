@@ -17,6 +17,7 @@
             <thead class="thead-inverse">
                 <tr>
                     <th>#</th>
+                    <th>User</th>
                     <th>Datetime</th>
                     <th>Sample Name</th>
                     <th>Column</th>
@@ -40,6 +41,9 @@
                     {% endif %}
                        <td>
                            {{ chromatogram.id }}
+                       </td>
+                       <td>
+                           {{ chromatogram.User }}
                        </td>
                         <td>
                            {{ chromatogram.Datetime|fromunix|date:"d.m.y H:i:s" }}

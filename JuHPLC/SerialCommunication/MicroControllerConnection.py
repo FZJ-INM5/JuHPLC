@@ -8,7 +8,8 @@ import serial.tools.list_ports
 
 from JuHPLC.models import *
 from django.forms.models import model_to_dict
-
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync, AsyncToSync
 
 
 class MicroControllerConnection:
@@ -18,6 +19,8 @@ class MicroControllerConnection:
 
     def __init__(self, chromatogram, portname, baudrate=9600, timeout=2):
         self.logger = logging.getLogger(__name__)
+
+        self.channel_layer = get_channel_layer()
         """
 
         :param portname:Name of the Port to be used. In Windows this could be COMX, on linux this could be a /dev/XXXX
@@ -37,12 +40,21 @@ class MicroControllerConnection:
         self.timeout = timeout
         self.stopacquisitionflag = False
 
+        self.prefix = self.portname.split('/')[-1]
+
+        self.prefixChannelName = True
+
         self.serialInterface = serial.Serial(portname, baudrate, timeout=self.timeout)
-        self.dataCache = {"UV":[]}
+
+        if self.prefixChannelName:
+            self.dataCache = {self.prefix + "Counter": []}
+        else:
+            self.dataCache = {"Counter": []}
+
 
     def startacquisition(self):
         self.stopacquisitionflag = False
-        self.thread = _thread.start_new_thread(self.acquisitionmethod, ())
+        self.thread = _thread.start_new_thread(self.acquisitionmethod,())
 
     def stopacquisition(self):
         self.stopacquisitionflag = True
@@ -74,7 +86,10 @@ class MicroControllerConnection:
 
         self.__sendAquisitionMode()
 
-        self.dataCache = {"UV": []}
+        if self.prefixChannelName:
+            self.dataCache = {self.prefix + "Counter": [],self.prefix + "UV": []}
+        else:
+            self.dataCache = {"Counter": [],"UV":[]}
 
         time.sleep(2)  # auf die ersten datensätze warten
 
@@ -85,6 +100,8 @@ class MicroControllerConnection:
     def __sendAquisitionMode(self):
         if self.chromatogram.SampleRate == 1:
             self.serialInterface.write(b"c")
+        elif self.chromatogram.SampleRate >= 1000:
+            self.serialInterface.write(b"W"+ bytes(str(self.chromatogram.SampleRate), 'ascii'))
         else:
             self.serialInterface.write(b"C" + bytes(str(self.chromatogram.SampleRate), 'ascii'))
 
@@ -111,7 +128,6 @@ class MicroControllerConnection:
                 self.serialInterface.write(b"t")
                 self.serialInterface.flushInput()
 
-
     def __main_loop(self):
         buffer = ''
         currentdatetime = 0
@@ -126,7 +142,7 @@ class MicroControllerConnection:
             while '\n' not in buffer:
                 buffer = buffer + self.serialInterface.read(1).decode("utf-8")
             if '\n' in buffer:  # genau dann ist eine Messreihe übertragen
-                zyklus, zeitInMin, analogSignal, counts = buffer.split(',', 3)
+                zyklus, zeitInMin,uv, counts = buffer.split(',', 3)
 
                 if (int(zyklus) < int(zyklusAlt)):
                     zyklusAlt = 1
@@ -141,29 +157,41 @@ class MicroControllerConnection:
                     prev.NextChromatogram = self.chromatogram.pk
                     prev.save()
 
-                    self.dataCache = {"UV": []}
+                    if self.prefixChannelName:
+                        self.dataCache = {self.prefix + "Counter": [], self.prefix + "UV": []}
+                    else:
+                        self.dataCache = {"Counter": [], "UV": []}
 
                 zyklusAlt = int(zyklus)
 
                 # do db save here
                 data1 = HplcData()
                 data1.Chromatogram = self.chromatogram
-                data1.Value = analogSignal
+                data1.Value = counts
                 data1.Datetime = currentdatetime
-                data1.ChannelName = "UV"
+                data1.ChannelName = "Counter"
+                if self.prefixChannelName:
+                    data1.ChannelName = self.prefix+data1.ChannelName
                 tmpList.append(data1)
-                self.dataCache["UV"].append(model_to_dict(data1))
+                AsyncToSync(self.channel_layer.group_send)("ChromatogramDetails_%s" % self.chromatogram.id,{
+                    'message': model_to_dict(data1),
+                    'type': 'hplc.data'
+                })
+                self.dataCache[data1.ChannelName].append(model_to_dict(data1))
 
-                if self.chromatogram.AcquireADC:
-                    data2 = HplcData()
-                    data2.Chromatogram = self.chromatogram
-                    data2.Value = counts
-                    data2.Datetime = currentdatetime
-                    data2.ChannelName = "Counter"
-                    tmpList.append(data2)
-                    if "Counter" not in self.dataCache:
-                        self.dataCache["Counter"] = []
-                    self.dataCache["Counter"].append(model_to_dict(data2))
+                data2 = HplcData()
+                data2.Chromatogram = self.chromatogram
+                data2.Value = uv
+                data2.Datetime = currentdatetime
+                data2.ChannelName = "UV"
+                if self.prefixChannelName:
+                    data2.ChannelName = self.prefix + data2.ChannelName
+                tmpList.append(data2)
+                AsyncToSync(self.channel_layer.group_send)("ChromatogramDetails_%s" % self.chromatogram.id, {
+                    'message': model_to_dict(data2),
+                    'type': 'hplc.data'
+                })
+                self.dataCache[data1.ChannelName].append(model_to_dict(data2))
 
                 buffer = ''
                 currentdatetime += 1
@@ -176,7 +204,8 @@ class MicroControllerConnection:
                 if self.chromatogram.MaxRuntime != 0 and int(zyklus) / (
                         60.0 * self.chromatogram.SampleRate) > self.chromatogram.MaxRuntime:
                     # not using import here to not have cyclic references, as these tend to cause problems
-                    JuHPLC.SerialCommunication.MicroControllerManager.MicroControllerManager.getinstance().stopacquisitionforchromatogram(
-                        self.chromatogram)
+                    JuHPLC.SerialCommunication.\
+                        MicroControllerManager.MicroControllerManager.\
+                        getinstance().stopacquisitionforchromatogram(self.chromatogram)
         # persist data at the end
         HplcData.objects.bulk_create(tmpList)

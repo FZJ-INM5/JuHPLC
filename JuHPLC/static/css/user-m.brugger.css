@@ -1,0 +1,19 @@
+@media screen{
+    body{
+        background-color:#fee3ff !important;
+    }
+
+    .card{
+        background-color:#e0c0ff !important;
+    }
+
+    .card-block{
+        background-color:#fecffa !important;
+    }
+    textarea{
+        background-color: #ffcffafc !important;
+    }
+    .chromatogramNavbar{
+        background-color: #e0c0ff !important;
+    }
+}

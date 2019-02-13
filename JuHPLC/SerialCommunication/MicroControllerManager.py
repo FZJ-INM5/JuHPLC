@@ -1,4 +1,5 @@
 from JuHPLC.SerialCommunication.MicroControllerConnection import MicroControllerConnection
+from JuHPLC.SerialCommunication.MicroControllerConnectionViaThinclient import MicroControllerConnectionViaThinclient
 
 
 class MicroControllerManager:
@@ -11,7 +12,10 @@ class MicroControllerManager:
 
     def startacquisition(self, chromatogram, portname):
         if portname not in self.activeConnections:
-            con = MicroControllerConnection(chromatogram, portname)
+            if len(portname.split(' - ')) == 2:
+                con = MicroControllerConnection(chromatogram, portname.split(' - ')[0])
+            else:
+                con = MicroControllerConnectionViaThinclient(chromatogram,portname.split(' - ')[0],portname.split(' - ')[1])
             self.activeConnections[portname] = con
             con.startacquisition()
             return
@@ -24,12 +28,23 @@ class MicroControllerManager:
                 return self.activeConnections[i]
         return None
 
+    def getAllConnectionsForChromatogramID(self,chromatogramid):
+        res = []
+        for i in self.activeConnections:
+            if self.activeConnections[i].chromatogram.id == int(chromatogramid):
+                res.append(self.activeConnections[i])
+
+        if len(res) > 0:
+            return res
+        return None
+
     def stopacquisitionforchromatogram(self,chromatogram):
         for i in self.activeConnections:
             if self.activeConnections[i].chromatogram == chromatogram:
                 self.activeConnections[i].stopacquisition()
                 del self.activeConnections[i]
-                return
+                return False
+        return True
 
 
     def stopacquisitionforportname(self, portname):

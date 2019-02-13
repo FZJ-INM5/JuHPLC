@@ -14,3 +14,16 @@ def index(request):
                                             "active": MicroControllerManager.getinstance().getactivechromatogramids()
                                         })
 
+
+def mychromatograms(request):
+
+    chromatograms = Chromatogram.objects.all().filter(User=request.user).order_by("-Datetime")
+
+    for i in chromatograms:
+        i.data = HplcData.objects.filter(Chromatogram=i).count()>0
+
+    return render(request, "index.html", {
+                                            "chromatograms": chromatograms,
+                                            "active": MicroControllerManager.getinstance().getactivechromatogramids()
+                                        })
+

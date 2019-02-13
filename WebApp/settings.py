@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'JuHPLC.apps.JuhplcConfig',
     'compressor',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -134,9 +135,19 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'JuHPLC/static')
 STATIC_URL = '/static/'
 COMPRESS_ENABLED = True
+COMPRESS_DEBUG_TOGGLE = 'nocompress'
 
-CHROMIUM_PATH = "chromium-browser"
+CHROMIUM_PATH = "D:\\chrome-win32\\chrome.exe"
 
-# we want to have sliding expiration, so the session gets refreshed whenever a request occurs.
-# this way in most cases the users only have to login once
+USE_MARKER_IN_CHROMATOGRAM = True
+
+#we want to have sliding expiration, so the session gets refreshed whenever a request occurs.
+#this way in most cases the users only have to login once
 SESSION_SAVE_EVERY_REQUEST = True
+
+ASGI_APPLICATION = "WebApp.routing.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    },
+}

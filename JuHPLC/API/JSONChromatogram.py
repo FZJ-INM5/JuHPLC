@@ -1,6 +1,6 @@
 import JuHPLC.API.Chromatogram
 import JuHPLC.API.HplcData
-from JuHPLC.models import Chromatogram, Eluent, Solvent, Peak, HplcData, Baseline
+from JuHPLC.models import Chromatogram, Eluent, Solvent, Peak, HplcData, Baseline, Marker
 from django.db.models import Model
 
 class JSONJuHPLCChromatogram(Model):
@@ -40,6 +40,7 @@ class JSONJuHPLCChromatogram(Model):
         self.Data["Data"] = JSONJuHPLCData(chrom).Data
         self.Data["Peaks"] = JSONJuHPLCPeaks(chrom).Peaks
         self.Data["Baseline"] = JSONJuHPLCBaseline(chrom).Baseline
+        self.Data["Marker"] = JSONJuHPLCMarker(chrom).Marker
         if len(self.Data["Peaks"]) == 0:
             for i in self.Data["Data"]:
                 self.Data["Peaks"][i] = []
@@ -125,3 +126,19 @@ class JSONJuHPLCBaseline:
             dataGrouped[d.ChannelName]['Type'] = d.Type
 
         self.Baseline = dataGrouped
+
+class JSONJuHPLCMarker:
+
+    def __init__(self, chrom):
+        self.Marker = {}
+        data = Marker.objects.filter(Chromatogram=chrom).order_by('Time').all()
+
+        result = []
+
+        for d in data:
+            result.append({
+                'Time':d.Time,
+                'Text':d.Text
+            })
+
+        self.Marker = result

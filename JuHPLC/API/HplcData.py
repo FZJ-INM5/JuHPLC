@@ -40,14 +40,15 @@ def HplcDataSinceTimestamp(request, chromatogramid, timestamp):
 
 def getCurrentChromatogramData(chromatogramid,timestamp):
 
-    data = MicroControllerManager.getinstance().getConnectionForChromatogramID(chromatogramid).dataCache
+    data = MicroControllerManager.getinstance().getAllConnectionsForChromatogramID(chromatogramid)
     tmp = {}
-    
-    for key, value in data.items():
-        if key not in tmp:
-            tmp[key]=[]
-        for i in range(int(timestamp)+1,len(value)):
-            tmp[key].append(value[i])
+
+    for i in data:
+        for key, value in i.dataCache.items():
+            if key not in tmp:
+                tmp[key] = []
+            for i in range(int(timestamp)+1,len(value)):
+                tmp[key].append(value[i])
     
     
     return JsonResponse(

@@ -32,7 +32,12 @@ def NewChromatogram(request):
     # 18F-Chemistry is used most often in our case, so set this as a sane default for decay correction calculation.
     halfLife = "109"
     try:
-        latestChrom = Chromatogram.objects.order_by("-Datetime").first()
+        latestChrom = Chromatogram.objects.order_by("-Datetime").filter(User=request.user).first()
+
+        #we don't have a chromatogram for this user yet, so load the default data from any user as a good starting point
+        if latestChrom is None:
+            latestChrom = Chromatogram.objects.order_by("-Datetime").first()
+
         eluents = Eluent.objects.filter(Chromatogram=latestChrom)
         solvents = []
         i=0
@@ -124,6 +129,8 @@ def ChromatogramOverwritePeaks(request,chromatogramid):
 @permission_required('chromatogram.chromatogram_edit')
 @csrf_exempt
 def ChromatogramOverwriteBaseline(request,chromatogramid):
+
+
     data = request.body.decode('utf-8')
     data2 = json.loads(data)
 

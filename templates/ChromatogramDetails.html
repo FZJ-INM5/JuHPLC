@@ -13,18 +13,24 @@
         <link rel="stylesheet" href="/static/css/dygraphs-2.1.0.css" type="text/css" charset="utf-8"/>
         <link rel="stylesheet" href="/static/css/offcanvas.css" type="text/css" charset="utf-8"/>
         <link rel="stylesheet" href="/static/css/fa-svg-with-js.css" type="text/css" charset="utf-8"/>
+
+
+
+
     {% endcompress %}
+    <link rel="stylesheet" href="/static/css/user-{{ user.get_username }}.css" type="text/css" charset="utf-8"/>
     {% autoescape off %}
         {% javascriptfile "/static/js/ml-savitzky-golay-browserified.min.js" request.GET.export %}
     {% endautoescape %}
     {% compress js inline %}
-
+        <script src="/static/js/reconnecting-websocket.js" type="text/javascript" charset="utf-8"></script>
         <script src="/static/js/vue.js" type="text/javascript" charset="utf-8"></script>
         <script src="/static/js/JuHPLC/Vue-Components/dygraphs-graph.js" type="text/javascript"
                 charset="utf-8"></script>
         <script src="/static/js/JuHPLC/Vue-Components/chromatogram-infocard.js" type="text/javascript"
                 charset="utf-8"></script>
         <script src="/static/js/JuHPLC/Vue-Components/peak-table.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/js/JuHPLC/Vue-Components/marker-table.js" type="text/javascript" charset="utf-8"></script>
 
         <script src="/static/js/jscolor.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="/static/js/cookies.js" type="text/javascript" charset="utf-8"></script>
@@ -35,7 +41,6 @@
         <script src="/static/js/penalized-least-squares.js" type="text/javascript" charset="utf-8"></script>
 
         <script src="/static/js/dygraphs-2.1.0.min.js" type="text/javascript" charset="utf-8"></script>
-        <!--<script src="/static/js/dygraphs-synchronizer.min.js" type="text/javascript" charset="utf-8"></script>-->
 
         <script src="/static/js/graphcolors.js" type="text/javascript" charset="utf-8"></script>
         <script src="/static/js/JuHPLC/Baseline.js" type="text/javascript" charset="utf-8"></script>
@@ -43,14 +48,10 @@
         <script src="/static/js/JuHPLC/JuHPLC.js" type="text/javascript" charset="utf-8"></script>
         <script src="/static/js/JuHPLC/JuHPLC-Helpers.js" type="text/javascript" charset="utf-8"></script>
 
-        <!--<script src="/static/js/iaea-nuclides.json" type="text/javascript" charset="utf-8"></script>-->
-
-        <!--<script src="/static/js/tensorflow.js" type="text/javascript" charset="utf-8"></script>-->
-
         <script src="/static/js/JuHPLC/gauss.js" type="text/javascript" charset="utf-8"></script>
-    {% endcompress %}
+        {% endcompress %}
     <div id="app">
-        <nav class="hidden-print navbar navbar-light navbar-expand-md fixed-top" style="background-color:white;">
+        <nav class="hidden-print navbar navbar-light navbar-expand-md fixed-top chromatogramNavbar">
             <button class="navbar-toggler navbar-toggler-right d-print-none" type="button" data-toggle="collapse"
                     data-target="#navbar1">
                 <span class="d-print-none navbar-toggler-icon"></span>
@@ -127,7 +128,8 @@
                             <a class="dropdown-item"
                                id="exportBtn"
                                href="?export=true"
-                               download data-toggle="tooltip"
+                               download="{{ chromatogram.id }}.html"
+                               data-toggle="tooltip"
                                data-placement="right"
                                title="Downloads the current Chromatogram as an HTML file that can be sent via mail">
                                 HTML Export
@@ -245,9 +247,13 @@
                                                     {% csrf_token %}
                                                     <div class="form-group">
                                                         <label for="exampleSelect1">Select Port</label>
-                                                        <select class="form-control" id="portname" name="portname">
+                                                        <select multiple class="form-control" id="portname" name="portname">
                                                             {% for port in ports %}
-                                                                <option>{{ port }}</option>
+                                                                <option
+                                                                {% if forloop.first %}
+                                                                    selected
+                                                                {% endif %}
+                                                                 >{{ port }}</option>
                                                             {% endfor %}
                                                         </select>
                                                     </div>
@@ -317,7 +323,11 @@
                         {% endfor %}
                     </div>
                 </div>
-                <div class="marker"></div>
+            {% if useMarker %}
+                <div class="marker col-md-12">
+                    <marker-table :chromatogram="chromatogram"></marker-table>
+                </div>
+            {% endif %}
                 <div v-for="(name,idx) in chromatogram.ChannelOrderShift.split(',').map((x)=>{return {name:x.split(' - ')[0].trim(),value:x.split(' - ')[1].trim()};}).filter((x) => chromatogram.Data.Data[x.name] !== undefined ).filter((x) => (chromatogram.Data.Data[x.name][0].length > x.value*chromatogram.SampleRate)).map((x)=>x.name)"
                      class="col-lg-12 juhplcGraphAndTable">
                     <div style="page-break-before:auto;"></div>
@@ -394,7 +404,7 @@
 
                 $('#refreshCheckbox').change(function () {
                     if (this.checked) {
-                        window.refreshTimeout = setTimeout(update, 1000);
+                        //window.refreshTimeout = setTimeout(update, 1000);
                     } else {
                         if (window.refreshTimeout != null) {
                             clearTimeout(window.refreshTimeout);
@@ -403,17 +413,112 @@
                 });
 
                 if ($('#refreshCheckbox').checked) {
-                    window.refreshTimeout = setTimeout(update, 1000);
+                    //window.refreshTimeout = setTimeout(update, 1000);
                 } else {
                     if (window.refreshTimeout != null) {
                         clearTimeout(window.refreshTimeout);
                     }
                 }
 
+                let webSocketUrl='ws://' + window.location.host +'/ws/JuHPLC/ChromatogramDetails/' + window.chromatogram.id + '/';
+                window.chatSocket =
+                    new ReconnectingWebSocket(webSocketUrl,null,{debug: true, reconnectInterval: 3000});
+
+
+
+                chatSocket.onmessage = function(input){
+                    console.log("websocket data:"+input.data);
+                    var data =JSON.parse(input.data);
+
+
+                    if(typeof(data.type) === 'undefined')
+                        return;
+
+                    switch(data.type){
+                        case 'hplc.data':
+                            data = data.message;
+                            console.log(data.Datetime);
+                            var i = data.ChannelName;
+
+                            if (window.chromatogram.Data.Data[i] === undefined) {
+                                Vue.set(window.chromatogram.Data.Data, i, []);
+                            }
+
+                            if (window.chromatogram.Data.Data[i][0] === undefined) {
+                                Vue.set(window.chromatogram.Data.Data[i], 0, []);
+                            }
+
+                            var newData = window.chromatogram.Data.Data[i][0].concat(parseFloat(data.Value));
+
+                            Vue.set(window.chromatogram.Data.Data[i], 0, newData);
+                            break;
+                        case 'hplc.setDeadTime':
+                            data = data.message;
+                            window.chromatogram.DeadTime = parseInt(data.DeadTime);
+                            break;
+                        case 'hplc.deletePeaks':
+                            for (var key in window.chromatogram.Data.Peaks) {
+                                window.chromatogram.Data.Peaks[key] = [];
+                            }
+                            break;
+                        case 'hplc.addPeak':
+                            data = data.message;
+                            window.chromatogram.Data.Peaks[data.channel].push(data.data);
+                            break;
+
+                        case 'hplc.renamePeak':
+                            data = data.message;
+                            for(var i=0;i<window.chromatogram.Data.Peaks[data.channel].length;i++){
+                                var current = window.chromatogram.Data.Peaks[data.channel][i];
+                                if(current.StartTime == data.data.StartTime && current.EndTime == data.data.EndTime){
+                                    current.Name=data.data.Name;
+                                }
+                            }
+                            break;
+                        case 'hplc.adjustPeak':
+                            data = data.message;
+                            for(var i=0;i<window.chromatogram.Data.Peaks[data.channel].length;i++){
+                                var current = window.chromatogram.Data.Peaks[data.channel][i];
+                                if(current.StartTime == data.data.beforeStartTime && current.EndTime == data.data.beforeEndTime){
+                                    current.StartTime=data.data.StartTime;
+                                    current.EndTime=data.data.EndTime;
+                                }
+                            }
+                            break;
+                        case 'hplc.addMarker':
+                            data = data.message;
+                            console.log("addmarker");
+                            console.log(data);
+                            if (window.chromatogram.Data.Marker === undefined) {
+                                Vue.set(window.chromatogram.Data, Marker, []);
+                            }
+                            window.chromatogram.Data.Marker.push({
+                                Time:data.Time,
+                                Text:data.Text
+                            })
+
+                            break;
+                        case 'hplc.nextChromatogram':
+                            data = data.message;
+                            window.location.href = "/ChromatogramDetails/" + data.id + "?autorefresh=true";
+                            break;
+                        case 'registration':
+                            data = data.message;
+                            window.channel_name=data['channel_name'];
+                            break;
+                    }
+
+
+                };
+                chatSocket.onerror = function(e){
+                    console.log("Websocket Error:", e);
+                };
+
+
                 {% if request.GET.autorefresh %}
                     setTimeout(function () {
                         $('#refreshCheckbox').prop("checked", true);
-                        window.refreshTimeout = setTimeout(update, 200);
+                        //window.refreshTimeout = setTimeout(update, 200);
                         $('html, body').animate({scrollTop: $('.marker').offset().top - 112}, 1000);
                     }, 500);
                 {% endif %}
@@ -500,12 +605,6 @@
                     //window.juhplc.juhplcdygraphs.resizeGraphs();
                     window.app.$eventHub.$emit('resizeGraphs');
                 }).tooltip();
-
-                /*$('#syncGraphsCheckbox').click(function (abc) {
-                    setTimeout(function () {
-                        window.syncGraphs();
-                    }, 150);
-                });*/
 
                 $('#findPeaksModalOpen').click(function (abx) {
                     $('#findPeaksModalTargetGraphName').empty();
@@ -629,6 +728,13 @@
                     for (var key in window.chromatogram.Data.Peaks) {
                         window.chromatogram.Data.Peaks[key] = [];
                     }
+
+                    if(window.chatSocket != null) {
+                        window.chatSocket.send(JSON.stringify({
+                            type: 'deletePeaks',
+                            sender: window.channel_name
+                        }));
+                    }
                 }).tooltip();
 
                 $('#viewOptionsModal').on('shown.bs.modal', function () {
@@ -723,24 +829,6 @@
                 });
 
             }
-
-
-            /*function syncGraphs() {
-                var shouldSync = $('#syncGraphsCheckbox')[0].checked;
-                if (window.sync !== null && window.sync !== undefined) {
-                    window.sync.detach();
-                    window.sync = null;
-                }
-
-                if (shouldSync) {
-                    window.sync = Dygraph.synchronize(window.app.$root.$children.filter((x) => x.$options.name === 'dygraphs-graph').map((x) => x.$data._graph), {
-                        "range": true,
-                        "selection": true,
-                        "zoom": true
-                    });
-                }
-            }*/
-
 
             function initVue() {
 

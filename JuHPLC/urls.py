@@ -18,6 +18,7 @@ import JuHPLC.Views.Login
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^mychromatograms/$', views.mychromatograms, name='mychromatograms'),
     url(r'^NewChromatogram/save', JuHPLC.Views.NewChromatogramSave.NewChromatogramSave, name='NewChromatogramSave'),
     url(r'^NewChromatogram/start', JuHPLC.Views.NewChromatogramStart.NewChromatogramStart, name='NewChromatogramStart'),
     url(r'^NewChromatogram/stop', JuHPLC.Views.NewChromatogramStop.NewChromatogramStop, name='NewChromatogramStop'),
@@ -49,6 +50,8 @@ urlpatterns = [
     url(r'^api/GetChromatogramsWithPeaksNamed/(?P<peakName>.+)', GetChromatogramsWithPeaksNamed, name='GetChromatogramsWithPeaksNamed'),
 
     url(r'^api/getColumns', getColumns, name='getColumns'),
+
+    url(r'^api/AddMarker/(?P<chromatogramid>[0-9]+)$', AddMarker, name='AddMarker'),
 
     url(r'^api/Calibration/Delete/(?P<calibrationid>[0-9]+)$', JuHPLC.API.Calibration.delete, name='CalibrationDelete'),
 

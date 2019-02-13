@@ -4,7 +4,7 @@ Vue.component('peak-table', {
         graphname: "",
         chromatogram: {}
     },
-    template: '<div class="peakTable"><table class="table table-sm juhplcPeakTable page-break-inside-avoid" v-show="peaks[graphname].length">\n' +
+    template: '<div class="peakTable"><table class="table table-sm juhplcPeakTable page-break-inside-avoid" v-show="peaks[graphname] && peaks[graphname].length">\n' +
     '            <thead>\n' +
     '            <tr>\n' +
     '                <th></th>\n' +
@@ -45,6 +45,13 @@ Vue.component('peak-table', {
         remove_peak: function (peakToRemoveIdx) {
             console.log("this.peaks");
             console.log(this.peaks);
+             if(window.chatSocket != null) {
+                window.chatSocket.send(JSON.stringify({
+                    type: 'removePeak',
+                    channel: this.graphname,
+                    data:this.peaks[this.graphname][peakToRemoveIdx]
+                }));
+            }
             this.peaks[this.graphname].splice(peakToRemoveIdx, 1);
         }
     },
@@ -129,6 +136,14 @@ Vue.component('peak-table-row', {
         },
         peakNameChanged: function (event) {
             this.peak.Name = event.target.value;
+
+            if(window.chatSocket !== null){
+                window.chatSocket.send(JSON.stringify({
+                    'type':'renamePeak',
+                    'channel':this.graphname,
+                    'data':this.peak
+                }));
+            }
         },
         PeakAreaRender() {
             var area = this.PeakArea;
@@ -154,61 +169,65 @@ Vue.component('peak-table-row', {
 
     },
     render(h) {
-        return h('tr', {
-                style: {
-                    backgroundColor: getColor(this.idx, 0.5)
-                }
-            }, [
-                h("td", [h("input", {
+        if(typeof(this.peak.active) !== 'undefined' && this.peak.active){
+            return h('tr');
+        }else {
+            return h('tr', {
+                    style: {
+                        backgroundColor: getColor(this.idx, 0.5)
+                    }
+                }, [
+                    h("td", [h("input", {
+                            attrs: {
+                                type: "checkbox",
+                                checked: this.$data._checked
+                            },
+                            on: {
+                                change: this.toggleChecked
+                            }
+                        }
+                    )]),
+                    h("td", this.idx),
+                    h("td", [h('input', {
                         attrs: {
-                            type: "checkbox",
-                            checked: this.$data._checked
+                            type: 'text',
+                            value: this.peak.Name,
+                            id: 'peak-table-row-nameInput' + this._uid,
+                            class: "peak-table-textbox"
                         },
                         on: {
-                            change: this.toggleChecked
+                            input: this.peakNameChanged
                         }
-                    }
-                )]),
-                h("td", this.idx),
-                h("td", [h('input', {
-                    attrs: {
-                        type: 'text',
-                        value: this.peak.Name,
-                        id: 'peak-table-row-nameInput' + this._uid,
-                        class:"peak-table-textbox"
-                    },
-                    on: {
-                        input: this.peakNameChanged
-                    }
-                })]),
-                h("td", this.RetentionTime),
-                h("td", this.RetentionFactor),
-                h("td", this.PeakSymmetry),
-                h("td", this.EfficiencyFactor),
-                h("td", this.PeakAreaRender()),
-                h("td", {attrs: {class: "hidden-print"}}, [h("button", {
-                    attrs: {
-                        type: "button",
-                        class: "btn btn-info btn-sm",
-                        style: "padding:0rem 1rem;"
-                    },
-                    on: {
-                        click: this.zoomInto
-                    }
-                }, "Details")]),
-                h("td", {attrs: {class: "hidden-print"}}, [h("button", {
-                    attrs: {
-                        type: "button",
-                        class: "btn btn-danger btn-sm hidden-print",
-                        style: "padding:0rem 1rem;"
-                    },
-                    on: {
-                        click: this.removePeak
-                    }
-                }, "Delete")]),
-                h("td", this.PeakAreaPercent)
-            ]
-        );
+                    })]),
+                    h("td", this.RetentionTime),
+                    h("td", this.RetentionFactor),
+                    h("td", this.PeakSymmetry),
+                    h("td", this.EfficiencyFactor),
+                    h("td", this.PeakAreaRender()),
+                    h("td", {attrs: {class: "hidden-print"}}, [h("button", {
+                        attrs: {
+                            type: "button",
+                            class: "btn btn-info btn-sm",
+                            style: "padding:0rem 1rem;"
+                        },
+                        on: {
+                            click: this.zoomInto
+                        }
+                    }, "Details")]),
+                    h("td", {attrs: {class: "hidden-print"}}, [h("button", {
+                        attrs: {
+                            type: "button",
+                            class: "btn btn-danger btn-sm hidden-print",
+                            style: "padding:0rem 1rem;"
+                        },
+                        on: {
+                            click: this.removePeak
+                        }
+                    }, "Delete")]),
+                    h("td", this.PeakAreaPercent)
+                ]
+            );
+        }
     }
 });
 Vue.use("peak-table-row");

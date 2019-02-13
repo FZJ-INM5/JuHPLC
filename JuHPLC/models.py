@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.contrib.auth.models import User
 
 
 # Create your models here.
@@ -43,6 +44,7 @@ class Chromatogram(models.Model):
     SampleRate = models.IntegerField()
     NextChromatogram = models.IntegerField()
     HalfLife = models.FloatField()
+    User = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
 class Eluent(models.Model):
@@ -87,3 +89,8 @@ class Calibration(models.Model):
     RetentionFactorError = models.FloatField()
     Eluent = models.TextField()
     Unit = models.TextField()
+
+class Marker(models.Model):
+    Chromatogram = models.ForeignKey(Chromatogram, on_delete=models.CASCADE)
+    Time = models.IntegerField()
+    Text = models.TextField()

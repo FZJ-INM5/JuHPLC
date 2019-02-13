@@ -1,19 +1,31 @@
+from asgiref.sync import AsyncToSync
+from channels.layers import get_channel_layer
 from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import permission_required
 from django.core import serializers
 import json
 
+from django.views.decorators.csrf import csrf_exempt
 
 from JuHPLC.models import *
 
-@permission_required('chromatogram.chromatogram_edit')
-def SetDeadTime(request, chromatogramid,DeadTime):
-    c = Chromatogram.objects.get(pk=chromatogramid)
-    c.DeadTime = DeadTime
-    c.save()
 
-    return HttpResponse()
+def SetDeadTime(request, chromatogramid, DeadTime):
+    if request.user and request.user.is_authenticated and request.user.has_perm('chromatogram.chromatogram_edit'):
+        c = Chromatogram.objects.get(pk=chromatogramid)
+        c.DeadTime = DeadTime
+        c.save()
+        channel_layer = get_channel_layer()
+
+        AsyncToSync(channel_layer.group_send)("ChromatogramDetails_%s" % c.id, {
+            'message': {'DeadTime':DeadTime},
+            'type': 'hplc.setDeadTime'
+        })
+
+        return HttpResponse()
+    else:
+        return HttpResponse(status=401)
 
 @permission_required('chromatogram.chromatogram_delete')
 def delete(request,chromatogramid):
@@ -38,3 +50,16 @@ def GetChromatogramsWithPeaksNamed(request,peakName):
         {
             "chromatograms": json.dumps(result),
         })
+
+@csrf_exempt
+def AddMarker(request, chromatogramid):
+    if request.user and request.user.is_authenticated and request.user.has_perm('chromatogram.chromatogram_edit'):
+        c = Chromatogram.objects.get(pk=chromatogramid)
+
+        m = Marker(Chromatogram=c,Time=request.POST.get("Time", ""),Text=request.POST.get("Text", ""))
+
+
+        m.save()
+        return HttpResponse()
+    else:
+        return HttpResponse(status=401)

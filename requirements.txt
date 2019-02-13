@@ -3,3 +3,5 @@ django>=1.11b1
 jsonpickle==0.9.4
 django_compressor
 csscompressor
+channels
+websocket-client
