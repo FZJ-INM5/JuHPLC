@@ -17,10 +17,10 @@ Vue.component('marker-table', {
     '                </tr>' +
         '<tr>' +
     '       <td>' +
-    '           <input type="text" v-on:keyup.enter="add_marker2(\'markerTextTmp2\',\'markerTextTmp2Time\')" style="width:30%" placeholder="Time to add marker (mm:ss)" id="markerTextTmp2Time" />' +
+    '           <input type="text" v-on:keyup.enter="add_marker2(\'markerTextTmp2\',\'markerTextTmp2Time\')" style="width:30%" placeholder="Time to add marker (mm.ss)" id="markerTextTmp2Time" />' +
     '       </td>' +
     '       <td>' +
-    '          <input v-on:keyup.enter="add_marker2(\'markerTextTmp2\',\'markerTextTmp2Time\')" type="text" placeholder="Text for new Marker at current time" id="markerTextTmp2" /><input type="button" class="btn btn-success" value="Add" ' +
+    '          <input v-on:keyup.enter="add_marker2(\'markerTextTmp2\',\'markerTextTmp2Time\')" type="text" placeholder="Text for new Marker" id="markerTextTmp2" /><input type="button" class="btn btn-success" value="Add" ' +
     '               v-on:click="add_marker2(\'markerTextTmp2\',\'markerTextTmp2Time\')"/>' +
     '       </td>' +
     '   </tr>'+
