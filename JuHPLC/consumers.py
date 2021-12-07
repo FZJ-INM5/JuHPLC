@@ -1,5 +1,6 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
+from asgiref.sync import sync_to_async
 
 from JuHPLC.models import Chromatogram, Peak, Marker
 
@@ -70,9 +71,9 @@ class JuHPLCConsumer(AsyncWebsocketConsumer):
 
         # send the new deadtime to everyone except the sender
         if text_data_json['type'] == 'setDeadTime':
-            c = Chromatogram.objects.get(pk=self.room_name)
+            c = await sync_to_async(Chromatogram.objects.get,thread_sensitive=True)(pk=self.room_name)
             c.DeadTime = text_data_json['DeadTime']
-            c.save()
+            await sync_to_async(c.save)()
 
             await self.channel_layer.group_send(self.room_group_name + '.NOT.' + self.channel_name_without_prefix, {
                 'message': {'DeadTime': text_data_json['DeadTime']},
@@ -80,8 +81,8 @@ class JuHPLCConsumer(AsyncWebsocketConsumer):
             })
 
         if text_data_json['type'] == 'deletePeaks':
-            c = Chromatogram.objects.get(pk=self.room_name)
-            Peak.objects.filter(Chromatogram=c).delete()
+            c = await sync_to_async(Chromatogram.objects.get,thread_sensitive=True)(pk=self.room_name)
+            await sync_to_async(Peak.objects.filter(Chromatogram=c).delete)()
 
             await self.channel_layer.group_send(self.room_group_name + '.NOT.' + self.channel_name_without_prefix, {
                 'message': {},
@@ -89,14 +90,14 @@ class JuHPLCConsumer(AsyncWebsocketConsumer):
             })
 
         if text_data_json['type'] == 'addPeak':
-            c = Chromatogram.objects.get(pk=self.room_name)
+            c = await sync_to_async(Chromatogram.objects.get,thread_sensitive=True)(pk=self.room_name)
             p = Peak()
             p.ChannelName = text_data_json['channel']
             p.Chromatogram = c
             p.StartTime = text_data_json['data']["StartTime"]
             p.EndTime = text_data_json['data']["EndTime"]
             p.Name = text_data_json['data']["Name"]
-            p.save()
+            await sync_to_async(p.save)()
 
             await self.channel_layer.group_send(self.room_group_name + '.NOT.' + self.channel_name_without_prefix, {
                 'message': {'channel':text_data_json['channel'],'data':text_data_json['data']},
@@ -104,14 +105,14 @@ class JuHPLCConsumer(AsyncWebsocketConsumer):
             })
 
         if text_data_json['type'] == 'renamePeak':
-            c = Chromatogram.objects.get(pk=self.room_name)
-            p = Peak.objects\
+            c = await sync_to_async(Chromatogram.objects.get,thread_sensitive=True)(pk=self.room_name)
+            p = await sync_to_async(Peak.objects\
                 .filter(Chromatogram=c)\
                 .filter(StartTime=text_data_json['data']["StartTime"])\
                 .filter(EndTime=text_data_json['data']["EndTime"])\
-                .filter(ChannelName=text_data_json['channel']).first()
+                .filter(ChannelName=text_data_json['channel']).first)()
             p.Name = text_data_json['data']["Name"]
-            p.save()
+            await sync_to_async(p.save)()
 
             await self.channel_layer.group_send(self.room_group_name + '.NOT.' + self.channel_name_without_prefix, {
                 'message': text_data_json,
@@ -135,13 +136,13 @@ class JuHPLCConsumer(AsyncWebsocketConsumer):
             })
 
         if text_data_json['type'] == 'removePeak':
-            c = Chromatogram.objects.get(pk=self.room_name)
-            p = Peak.objects\
+            c = await sync_to_async(Chromatogram.objects.get,thread_sensitive=True)(pk=self.room_name)
+            p = await sync_to_async(Peak.objects\
                 .filter(Chromatogram=c)\
                 .filter(StartTime=text_data_json['data']["StartTime"])\
                 .filter(EndTime=text_data_json['data']["EndTime"])\
-                .filter(ChannelName=text_data_json['channel']).first()
-            p.delete()
+                .filter(ChannelName=text_data_json['channel']).first)()
+            await sync_to_async(p.delete)()
 
             await self.channel_layer.group_send(self.room_group_name + '.NOT.' + self.channel_name_without_prefix, {
                 'message': text_data_json,
@@ -150,9 +151,9 @@ class JuHPLCConsumer(AsyncWebsocketConsumer):
 
         if text_data_json['type'] == 'addMarker':
 
-            c = Chromatogram.objects.get(pk=self.room_name)
+            c = await sync_to_async(Chromatogram.objects.get, thread_sensitive=True)(pk=self.room_name)
             m = Marker(Chromatogram=c, Time=text_data_json['Time'], Text=text_data_json['Text'])
-            m.save()
+            await sync_to_async(m.save)()
 
             await self.channel_layer.group_send(self.room_group_name, {
                 'message': text_data_json,

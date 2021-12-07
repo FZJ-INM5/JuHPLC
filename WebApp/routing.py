@@ -9,8 +9,8 @@ from JuHPLC import ThinClientConsumers
 
 
 websocket_urlpatterns = [
-    url(r'^ws/JuHPLC/ChromatogramDetails/(?P<id>[^/]+)/$', consumers.JuHPLCConsumer),
-    url(r'^ws/JuHPLC/ThinClient/$', ThinClientConsumers.ThinClientConsumer)
+    url(r'^ws/JuHPLC/ChromatogramDetails/(?P<id>[^/]+)/$', consumers.JuHPLCConsumer.as_asgi()),
+    url(r'^ws/JuHPLC/ThinClient/$', ThinClientConsumers.ThinClientConsumer.as_asgi())
 ]
 
 application = ProtocolTypeRouter({
