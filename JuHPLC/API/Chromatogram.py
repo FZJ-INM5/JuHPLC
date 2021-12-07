@@ -28,7 +28,7 @@ def SetDeadTime(request, chromatogramid, DeadTime):
         return HttpResponse(status=401)
 
 @permission_required('chromatogram.chromatogram_delete')
-def delete(request,chromatogramid):
+def deleteChromatogram(request,chromatogramid):
     c = Chromatogram.objects.get(pk=chromatogramid)
     HplcData.objects.filter(Chromatogram=c).delete()
     Baseline.objects.filter(Chromatogram=c).delete()
