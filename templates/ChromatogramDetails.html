@@ -710,7 +710,7 @@
                     for (var channelname in window.chromatogram.Data.Data) {
                         var tmp2 = "";
                         for (var i = 0; i < window.chromatogram.Data.Data[channelname][0].length; i++) {
-                            tmp2 += Math.round(window.chromatogram.Data.Data[channelname][0][i] * 1000) + "\n";
+                            tmp2 += Math.round(window.chromatogram.Data.Data[channelname][0][i]) + "\n";
                         }
                         download("ChromatogramDetails-{{ chromatogram.id }}-" + channelname + ".asc", tmp + tmp2);
                     }
