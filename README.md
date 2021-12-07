@@ -58,6 +58,13 @@ Run ```python3 manage.py migrate``` to update the database.
 
 Start the service again with ```sudo systemctl start juhplc``` .
 
+### Starting fresh
+Run ```sudo systemctl stop juhplc && mv db.sqlite3 db.sqlite3.bak && python3 manage.py migrate && sudo systemctl start juhplc```
+This will:
+1. Stop the Service
+2. Move the Database-File to db.sqlite3.bak
+3. Create a new Database-File
+4. Start the Service again
 
 ### Features
 * Data aquisition with our arduino-based interface
