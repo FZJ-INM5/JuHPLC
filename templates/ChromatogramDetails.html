@@ -328,7 +328,7 @@
                     <marker-table :chromatogram="chromatogram"></marker-table>
                 </div>
             {% endif %}
-                <div v-for="(name,idx) in chromatogram.ChannelOrderShift.split(',').map((x)=>{return {name:x.split(' - ')[0].trim(),value:x.split(' - ')[1].trim()};}).filter((x) => chromatogram.Data.Data[x.name] !== undefined ).filter((x) => (chromatogram.Data.Data[x.name][0].length > x.value*chromatogram.SampleRate)).map((x)=>x.name)"
+                <div v-for="(name,idx) in getChannelSortOrder(chromatogram)"
                      class="col-lg-12 juhplcGraphAndTable">
                     <div style="page-break-before:auto;"></div>
                     <div style="page-break-inside: avoid;">
@@ -841,6 +841,42 @@
                         chromatogram: window.chromatogram,
                         editDeadTime: false,
                         editBaseline: false
+                    },
+                    methods: {
+                        getChannelOrderShift(){
+                            return chromatogram.ChannelOrderShift.split(',')
+                                .map((x)=>{
+                                    return {
+                                        name:x.split(' - ')[0].trim(),
+                                        value:parseInt(x.split(' - ')[1].trim())
+                                    };
+                                });
+                        },
+
+                        getChannelSortOrderNames(chromatogram){
+                            let channelnames = [];
+                            let cos = getChannelOrderShift();
+                            for(var i in chromatogram.Data.Data){
+                                for(var j=0;j<cos.length;j++){
+                                    if(i.endsWith(cos[j].name) && hasChannelEnoughData(chromatogram.Data.Data[i],i,chromatogram.SampleRate,cos[j].value)){
+                                        channelnames.push(
+                                            {
+                                                name:i,
+                                                value:cos[j].value
+                                            }
+                                        );
+                                    }
+                                }
+                            }
+                            channelnames.sort((a,b) => a.value > b.value ? 1: -1);
+                            return channelnames;
+                        },
+                        getChannelnameSortOrderShift(){
+                            return this.getChannelSortOrderNames(this.chromatogram).map(x => x.name)
+                        },
+                        hasChannelEnoughData(data,channelname,samplerate,mindata){
+                            return data[0].length > mindata*chromatogram.SampleRate;
+                        }
                     }
                 });
             }

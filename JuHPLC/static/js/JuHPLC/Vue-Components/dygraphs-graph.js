@@ -1104,18 +1104,15 @@ Vue.component('dygraphs-graph', {
 });
 
 function transformDataToArray(c, graphName) {
-    var channelshifts = _getChannelOrderShifts(c);
-
-    if (!channelshifts.hasOwnProperty(graphName))
-        return [];
-
     if (typeof c.tmp === 'undefined') {
         c.tmp = {};
     }
     if (c.tmp.dygraphsData === undefined) {
         c.tmp.dygraphsData = {};
     }
-    var minNumberOfValues = channelshifts[graphName] * c.SampleRate;
+
+    var minNumberOfValues = getChannelSortOrderNamesForChannel(c,graphName) * c.SampleRate;
+
     if (c.Data.Data[graphName][0].length > minNumberOfValues) {
         if (c.tmp.dygraphsData[graphName] === undefined) {
             c.tmp.dygraphsData[graphName] = [];
@@ -1125,12 +1122,12 @@ function transformDataToArray(c, graphName) {
                 i2++;
             }
             for (var i = minNumberOfValues; i < c.Data.Data[graphName][0].length; i++) {
-                c.tmp.dygraphsData[graphName][i2] = [i2, parseFloat(c.Data.Data[graphName][0][i]) * parseFloat(c.Data.Factors[graphName])];
+                c.tmp.dygraphsData[graphName][i2] = [i2, parseFloat(c.Data.Data[graphName][0][i]) * getChannelFactors(c)[graphName]];
                 i2++;
             }
         } else {
             for (var i = c.tmp.dygraphsData[graphName].length; i < c.Data.Data[graphName][0].length; i++) {
-                c.tmp.dygraphsData[graphName][i] = [i, parseFloat(c.Data.Data[graphName][0][i]) * parseFloat(c.Data.Factors[graphName])];
+                c.tmp.dygraphsData[graphName][i] = [i, parseFloat(c.Data.Data[graphName][0][i]) * getChannelFactors(c)[graphName]];
             }
         }
         return c.tmp.dygraphsData[graphName];
@@ -1147,6 +1144,70 @@ function _getChannelOrderShifts(chromatogram) {
         channelshifts[pair[0].trim()] = parseInt(pair[1].trim());
     }
     return channelshifts;
+}
+
+function getChannelOrderShift(){
+    return chromatogram.ChannelOrderShift.split(',')
+        .map((x)=>{
+            return {
+                name:x.split(' - ')[0].trim(),
+                value:parseInt(x.split(' - ')[1].trim())
+            };
+        });
+}
+
+function getChannelSortOrderNames(chromatogram){
+    let channelnames = [];
+    let cos = getChannelOrderShift();
+    for(var i in chromatogram.Data.Data){
+        for(var j=0;j<cos.length;j++){
+            if(i.endsWith(cos[j].name) && hasChannelEnoughData(chromatogram.Data.Data[i],i,chromatogram.SampleRate,cos[j].value)){
+                channelnames.push(
+                    {
+                        name:i,
+                        value:cos[j].value
+                    }
+                );
+            }
+        }
+    }
+    channelnames.sort((a,b) => a.value > b.value ? 1: -1);
+    return channelnames;
+}
+
+function getChannelSortOrderNamesForChannel(chromatogram,channelname){
+    let tmp = getChannelSortOrderNames(chromatogram);
+    for (var i=0;i<tmp.length;i++){
+        if(tmp[i].name == channelname)
+            return tmp[i].value;
+    }
+    return 0;
+}
+
+function getFactors(){
+    let tmp = [];
+    for (var i in chromatogram.Data.Factors){
+        tmp.push(
+            {
+                name:i.trim(),
+                value:parseFloat(chromatogram.Data.Factors[i])
+            }
+        );
+    }
+    return tmp;
+}
+
+function getChannelFactors(chromatogram){
+    let channelnames = {};
+    let fac = getFactors();
+    for(var i in chromatogram.Data.Data){
+        for(var j=0;j<fac.length;j++){
+            if(i.endsWith(fac[j].name)){
+                channelnames[i] = fac[j].value
+            }
+        }
+    }
+    return channelnames;
 }
 
 Vue.use("dygraphs-graph");
