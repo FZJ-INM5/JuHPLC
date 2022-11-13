@@ -142,7 +142,7 @@ class MicroControllerConnection:
             while '\n' not in buffer:
                 buffer = buffer + self.serialInterface.read(1).decode("utf-8")
             if '\n' in buffer:  # genau dann ist eine Messreihe übertragen
-                zyklus, zeitInMin,uv, counts = buffer.split(',', 3)
+                zyklus, zeitInMin,uv, counts = [x.strip() for x in buffer.split(',', 3)] #strings trimmen
 
                 if (int(zyklus) < int(zyklusAlt)):
                     zyklusAlt = 1
