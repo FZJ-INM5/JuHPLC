@@ -328,7 +328,7 @@
                     <marker-table :chromatogram="chromatogram"></marker-table>
                 </div>
             {% endif %}
-                <div v-for="(name,idx) in getChannelSortOrder(chromatogram)"
+                <div v-for="(name,idx) in getChannelnameSortOrderShift()"
                      class="col-lg-12 juhplcGraphAndTable">
                     <div style="page-break-before:auto;"></div>
                     <div style="page-break-inside: avoid;">
@@ -858,7 +858,7 @@
                             let cos = getChannelOrderShift();
                             for(var i in chromatogram.Data.Data){
                                 for(var j=0;j<cos.length;j++){
-                                    if(i.endsWith(cos[j].name) && hasChannelEnoughData(chromatogram.Data.Data[i],i,chromatogram.SampleRate,cos[j].value)){
+                                    if(i.endsWith(cos[j].name) && this.hasChannelEnoughData(chromatogram.Data.Data[i],i,chromatogram.SampleRate,cos[j].value)){
                                         channelnames.push(
                                             {
                                                 name:i,

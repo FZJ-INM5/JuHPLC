@@ -1157,6 +1157,9 @@ function getChannelOrderShift(){
 }
 
 function getChannelSortOrderNames(chromatogram){
+    function hasChannelEnoughData(data,channelname,samplerate,mindata){
+        return data[0].length > mindata*samplerate;
+    }
     let channelnames = [];
     let cos = getChannelOrderShift();
     for(var i in chromatogram.Data.Data){
