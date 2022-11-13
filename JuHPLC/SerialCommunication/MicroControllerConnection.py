@@ -73,14 +73,14 @@ class MicroControllerConnection:
         self.serialInterface.write(b"x")
         # moegliche Sendereste abwarten
         self.serialInterface.flushInput()
-        time.sleep(2)
+        time.sleep(0.15)
 
 
         #rest lesen und verwerfen
         self.__throwRemainingBytesAway()
 
         self.setRheodyneSwitch()
-        time.sleep(2)
+        time.sleep(0.15)
 
         self.__throwRemainingBytesAway()
 
@@ -91,7 +91,7 @@ class MicroControllerConnection:
         else:
             self.dataCache = {"Counter": [],"UV":[]}
 
-        time.sleep(2)  # auf die ersten datensätze warten
+        time.sleep(0.15)  # auf die ersten datensätze warten
 
         self.__main_loop()
 
@@ -114,7 +114,7 @@ class MicroControllerConnection:
         if self.chromatogram.RheodyneSwitch:
             self.serialInterface.write(b"m")
             self.serialInterface.flushInput()
-            time.sleep(1.5)
+            time.sleep(0.2)
             res = self.serialInterface.read(1).decode("utf-8")
             if res == "m":
                 self.serialInterface.write(b"t")
@@ -122,7 +122,7 @@ class MicroControllerConnection:
         else:
             self.serialInterface.write(b"m")
             self.serialInterface.flushInput()
-            time.sleep(1.5)
+            time.sleep(0.2)
             res = self.serialInterface.read(1).decode("utf-8")
             if res == "s":
                 self.serialInterface.write(b"t")
