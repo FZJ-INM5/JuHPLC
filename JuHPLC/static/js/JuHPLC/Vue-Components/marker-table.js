@@ -67,7 +67,7 @@ Vue.component('marker-table', {
                     sender: window.channel_name,
                     Time: time,
                     Text: text
-            }));
+            });
             if(window.chatSocket.readyState == WebSocket.OPEN) {
                 window.chatSocket.send(msg);
             } else {
