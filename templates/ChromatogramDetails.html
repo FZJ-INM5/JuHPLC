@@ -425,6 +425,11 @@
                     new ReconnectingWebSocket(webSocketUrl,null,{debug: true, reconnectInterval: 3000});
 
 
+		chatSocket.localMessage = function(input){
+			var tmp = JSON.parse(input);
+			var tmp2 = { data:tmp}
+			return JSON.stringify(tmp2);
+		};
 
                 chatSocket.onmessage = function(input){
                     console.log("websocket data:"+input.data);
