@@ -576,7 +576,7 @@ Vue.component('dygraphs-graph', {
 		                    if(window.chatSocket.readyState == WebSocket.OPEN) {
                         		window.chatSocket.send(msg);
                     		    } else {
-                        		window.chatSocket.onmessage(msg);
+                        		window.chatSocket.localMessage(msg);
                     		    }
                                  }
 
