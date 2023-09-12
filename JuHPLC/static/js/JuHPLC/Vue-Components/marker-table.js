@@ -52,7 +52,7 @@ Vue.component('marker-table', {
             if(window.chatSocket.readyState == WebSocket.OPEN) {
                 window.chatSocket.send(msg);
             } else {
-                window.chatSocket.onmessage(msg);
+                window.chatSocket.localMessage(msg);
 	    }
             $('#'+elementId).clear();
         },
@@ -71,7 +71,7 @@ Vue.component('marker-table', {
             if(window.chatSocket.readyState == WebSocket.OPEN) {
                 window.chatSocket.send(msg);
             } else {
-                window.chatSocket.onmessage(msg);
+                window.chatSocket.localMessage(msg);
 	    }
 
             $('#'+elementIdText).val("");
