@@ -439,7 +439,7 @@ Vue.component('dygraphs-graph', {
 		    if(window.chatSocket.readyState == WebSocket.OPEN) {
 			window.chatSocket.send(msg);
 		    } else {
-                        window.chatSocket.onMessage(msg);
+                        window.chatSocket.onmessage(msg);
 		    }
 
                     return;
@@ -548,7 +548,7 @@ Vue.component('dygraphs-graph', {
 		                    if(window.chatSocket.readyState == WebSocket.OPEN) {
                         		window.chatSocket.send(msg);
                     		    } else {
-                        		window.chatSocket.onMessage(msg);
+                        		window.chatSocket.onmessage(msg);
                     		    }
                                     g.vueObject.activePeakCopy.beforeStartTime=g.vueObject.activePeakCopy.StartTime;
                                     g.vueObject.activePeakCopy.beforeEndTime=g.vueObject.activePeakCopy.EndTime;
@@ -576,7 +576,7 @@ Vue.component('dygraphs-graph', {
 		                    if(window.chatSocket.readyState == WebSocket.OPEN) {
                         		window.chatSocket.send(msg);
                     		    } else {
-                        		window.chatSocket.onMessage(msg);
+                        		window.chatSocket.onmessage(msg);
                     		    }
                                  }
 

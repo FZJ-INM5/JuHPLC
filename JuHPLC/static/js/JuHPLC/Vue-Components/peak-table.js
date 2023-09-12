@@ -53,7 +53,7 @@ Vue.component('peak-table', {
 	    if(window.chatSocket.readyState == WebSocket.OPEN) {
                 window.chatSocket.send(msg);
             } else {
-                window.chatSocket.onMessage(msg);
+                window.chatSocket.onmessage(msg);
 	    }
             this.peaks[this.graphname].splice(peakToRemoveIdx, 1);
         }
@@ -148,7 +148,7 @@ Vue.component('peak-table-row', {
 	    if(window.chatSocket.readyState == WebSocket.OPEN) {
                 window.chatSocket.send(msg);
 	    } else {
-                window.chatSocket.onMessage(msg);
+                window.chatSocket.onmessage(msg);
 	    }
         },
         PeakAreaRender() {
