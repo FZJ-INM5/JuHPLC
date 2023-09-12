@@ -45,13 +45,16 @@ Vue.component('peak-table', {
         remove_peak: function (peakToRemoveIdx) {
             console.log("this.peaks");
             console.log(this.peaks);
-             if(window.chatSocket != null) {
-                window.chatSocket.send(JSON.stringify({
+            var msg = JSON.stringify({
                     type: 'removePeak',
                     channel: this.graphname,
                     data:this.peaks[this.graphname][peakToRemoveIdx]
-                }));
-            }
+            });
+	    if(window.chatSocket.readyState == WebSocket.OPEN) {
+                window.chatSocket.send(msg);
+            } else {
+                window.chatSocket.onMessage(msg);
+	    }
             this.peaks[this.graphname].splice(peakToRemoveIdx, 1);
         }
     },
@@ -137,13 +140,16 @@ Vue.component('peak-table-row', {
         peakNameChanged: function (event) {
             this.peak.Name = event.target.value;
 
-            if(window.chatSocket !== null){
-                window.chatSocket.send(JSON.stringify({
+            var msg = JSON.stringify({
                     'type':'renamePeak',
                     'channel':this.graphname,
                     'data':this.peak
-                }));
-            }
+            });
+	    if(window.chatSocket.readyState == WebSocket.OPEN) {
+                window.chatSocket.send(msg);
+	    } else {
+                window.chatSocket.onMessage(msg);
+	    }
         },
         PeakAreaRender() {
             var area = this.PeakArea;

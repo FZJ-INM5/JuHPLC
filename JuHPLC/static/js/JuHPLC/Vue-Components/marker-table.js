@@ -43,14 +43,17 @@ Vue.component('marker-table', {
             var self = this;
             console.log("add_marker", text, time);
 
-            if(window.chatSocket != null) {
-                window.chatSocket.send(JSON.stringify({
+            var msg = JSON.stringify({
                     type: 'addMarker',
                     sender: window.channel_name,
                     Time: time,
                     Text:text
-                }));
-            }
+            });
+            if(window.chatSocket.readyState == WebSocket.OPEN) {
+                window.chatSocket.send(msg);
+            } else {
+                window.chatSocket.onMessage(msg);
+	    }
             $('#'+elementId).clear();
         },
         add_marker2: function (elementIdText,elementIdTime) {
@@ -59,14 +62,17 @@ Vue.component('marker-table', {
 
             time = Math.round(parseFloat(time)*60*this.chromatogram.SampleRate);
 
-            if(window.chatSocket != null) {
-                window.chatSocket.send(JSON.stringify({
+            var msg = JSON.stringify({
                     type: 'addMarker',
                     sender: window.channel_name,
                     Time: time,
                     Text: text
-                }));
-            }
+            }));
+            if(window.chatSocket.readyState == WebSocket.OPEN) {
+                window.chatSocket.send(msg);
+            } else {
+                window.chatSocket.onMessage(msg);
+	    }
 
             $('#'+elementIdText).val("");
             $('#'+elementIdTime).val("");

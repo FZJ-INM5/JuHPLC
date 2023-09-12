@@ -729,12 +729,15 @@
                         window.chromatogram.Data.Peaks[key] = [];
                     }
 
-                    if(window.chatSocket != null) {
-                        window.chatSocket.send(JSON.stringify({
-                            type: 'deletePeaks',
-                            sender: window.channel_name
-                        }));
-                    }
+                    var msg = JSON.stringify({
+                        type: 'deletePeaks',
+                        sender: window.channel_name
+                    });
+                    if(window.chatSocket.readyState == WebSocket.OPEN) {
+                        window.chatSocket.send(msg);
+		    } else {
+			window.chatSocket.onMessage(msg);
+		    }
                 }).tooltip();
 
                 $('#viewOptionsModal').on('shown.bs.modal', function () {
