@@ -164,20 +164,21 @@ class MicroControllerConnection:
 
                 zyklusAlt = int(zyklus)
 
-                # do db save here
-                data1 = HplcData()
-                data1.Chromatogram = self.chromatogram
-                data1.Value = counts
-                data1.Datetime = currentdatetime
-                data1.ChannelName = "Counter"
-                if self.prefixChannelName:
-                    data1.ChannelName = self.prefix+data1.ChannelName
-                tmpList.append(data1)
-                AsyncToSync(self.channel_layer.group_send)("ChromatogramDetails_%s" % self.chromatogram.id,{
-                    'message': model_to_dict(data1),
-                    'type': 'hplc.data'
-                })
-                self.dataCache[data1.ChannelName].append(model_to_dict(data1))
+                if self.chroamtogram.AcquireADC:
+                    # do db save here
+                    data1 = HplcData()
+                    data1.Chromatogram = self.chromatogram
+                    data1.Value = counts
+                    data1.Datetime = currentdatetime
+                    data1.ChannelName = "Counter"
+                    if self.prefixChannelName:
+                        data1.ChannelName = self.prefix+data1.ChannelName
+                    tmpList.append(data1)
+                    AsyncToSync(self.channel_layer.group_send)("ChromatogramDetails_%s" % self.chromatogram.id,{
+                        'message': model_to_dict(data1),
+                        'type': 'hplc.data'
+                    })
+                    self.dataCache[data1.ChannelName].append(model_to_dict(data1))
 
                 data2 = HplcData()
                 data2.Chromatogram = self.chromatogram
