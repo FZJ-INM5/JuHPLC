@@ -425,6 +425,11 @@
                     new ReconnectingWebSocket(webSocketUrl,null,{debug: true, reconnectInterval: 3000});
 
 
+		chatSocket.localMessage = function(input){
+			var tmp = JSON.parse(input);
+			var tmp2 = { data:tmp}
+			return JSON.stringify(tmp2);
+		};
 
                 chatSocket.onmessage = function(input){
                     console.log("websocket data:"+input.data);
@@ -729,12 +734,15 @@
                         window.chromatogram.Data.Peaks[key] = [];
                     }
 
-                    if(window.chatSocket != null) {
-                        window.chatSocket.send(JSON.stringify({
-                            type: 'deletePeaks',
-                            sender: window.channel_name
-                        }));
-                    }
+                    var msg = JSON.stringify({
+                        type: 'deletePeaks',
+                        sender: window.channel_name
+                    });
+                    if(window.chatSocket.readyState == WebSocket.OPEN) {
+                        window.chatSocket.send(msg);
+		    } else {
+			window.chatSocket.onmessage(msg);
+		    }
                 }).tooltip();
 
                 $('#viewOptionsModal').on('shown.bs.modal', function () {

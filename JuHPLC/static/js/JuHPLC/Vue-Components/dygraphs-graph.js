@@ -430,13 +430,17 @@ Vue.component('dygraphs-graph', {
                     context.destroy();
                     //endcleanup
 
-                    if(window.chatSocket != null) {
-                        window.chatSocket.send(JSON.stringify({
+                    var msg = JSON.stringify({
                             type: 'setDeadTime',
                             sender: window.channel_name,
                             DeadTime: this.chromatogram.DeadTime
-                        }));
-                    }
+                    });
+                    
+		    if(window.chatSocket.readyState == WebSocket.OPEN) {
+			window.chatSocket.send(msg);
+		    } else {
+                        window.chatSocket.localMessage(msg);
+		    }
 
                     return;
                 }
@@ -536,13 +540,16 @@ Vue.component('dygraphs-graph', {
                                 }
 
                                  if(g.vueObject.activePeakCopy != null){
-                                    if(window.chatSocket != null) {
-                                        window.chatSocket.send(JSON.stringify({
-                                            type: 'adjustPeak',
-                                            channel: g.graphname,
-                                            data:g.vueObject.activePeakCopy
-                                        }));
-                                    }
+                                    var msg = JSON.stringify({
+                                        type: 'adjustPeak',
+                                        channel: g.graphname,
+                                        data:g.vueObject.activePeakCopy
+                                    });
+		                    if(window.chatSocket.readyState == WebSocket.OPEN) {
+                        		window.chatSocket.send(msg);
+                    		    } else {
+                        		window.chatSocket.localMessage(msg);
+                    		    }
                                     g.vueObject.activePeakCopy.beforeStartTime=g.vueObject.activePeakCopy.StartTime;
                                     g.vueObject.activePeakCopy.beforeEndTime=g.vueObject.activePeakCopy.EndTime;
 
@@ -555,19 +562,22 @@ Vue.component('dygraphs-graph', {
                                          "Mode": "default",
                                          "Name": "undefined"
                                      });
+                                     var msg = JSON.stringify({
+                                          type: 'addPeak',
+                                          channel: g.graphname,
+                                          data:{
+                                              "StartTime": start,
+                                              "EndTime": end,
+                                              "Mode": "default",
+                                              "Name": "undefined"
+                                          }
+                                     });
 
-                                     if(window.chatSocket != null){
-                                        window.chatSocket.send(JSON.stringify({
-                                            type: 'addPeak',
-                                            channel: g.graphname,
-                                            data:{
-                                                    "StartTime": start,
-                                                    "EndTime": end,
-                                                    "Mode": "default",
-                                                    "Name": "undefined"
-                                                }
-                                            }));
-                                    }
+		                    if(window.chatSocket.readyState == WebSocket.OPEN) {
+                        		window.chatSocket.send(msg);
+                    		    } else {
+                        		window.chatSocket.localMessage(msg);
+                    		    }
                                  }
 
 
