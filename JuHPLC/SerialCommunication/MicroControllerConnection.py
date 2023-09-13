@@ -142,6 +142,7 @@ class MicroControllerConnection:
             while '\n' not in buffer:
                 buffer = buffer + self.serialInterface.read(1).decode("utf-8")
             if '\n' in buffer:  # genau dann ist eine Messreihe übertragen
+                print(f"buffer:{buffer}")
                 zyklus, zeitInMin,uv, counts = [x.strip() for x in buffer.split(',', 3)] #strings trimmen
 
                 if (int(zyklus) < int(zyklusAlt)):
@@ -164,7 +165,8 @@ class MicroControllerConnection:
 
                 zyklusAlt = int(zyklus)
 
-                if self.chroamtogram.AcquireADC:
+                data1 = None
+                if self.chromatogram.AcquireADC:
                     # do db save here
                     data1 = HplcData()
                     data1.Chromatogram = self.chromatogram
@@ -192,7 +194,7 @@ class MicroControllerConnection:
                     'message': model_to_dict(data2),
                     'type': 'hplc.data'
                 })
-                self.dataCache[data1.ChannelName].append(model_to_dict(data2))
+                self.dataCache[data2.ChannelName].append(model_to_dict(data2))
 
                 buffer = ''
                 currentdatetime += 1
