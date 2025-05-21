@@ -8,6 +8,8 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from django.core.management import call_command
+
 from JuHPLC.models import Chromatogram, HplcData, Peak
 import math
 
@@ -31,6 +33,8 @@ class PeakIntegrationFrontendTests(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # Ensure migrations are applied for the selenium test database
+        call_command('migrate', verbosity=0, interactive=False)
         options = Options()
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')

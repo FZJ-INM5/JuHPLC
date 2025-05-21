@@ -70,5 +70,13 @@ class MicroControllerManagerTests(unittest.TestCase):
         self.manager.stopacquisitionforportname('COM1 - desc')
         self.manager.stopacquisitionforportname('COM2 - desc')
 
+    def test_inactive_queries(self):
+        chrom = DummyChrom(3)
+        # no connections yet
+        self.assertIsNone(self.manager.getConnectionForChromatogramID(3))
+        self.assertIsNone(self.manager.getAllConnectionsForChromatogramID(3))
+        self.assertTrue(self.manager.stopacquisitionforchromatogram(chrom))
+        self.assertFalse(self.manager.chromatogramhasactiveacquisition(chrom))
+
 if __name__ == '__main__':
     unittest.main()

@@ -5,6 +5,7 @@ django.setup()
 import unittest
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.core.management import call_command
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -14,6 +15,8 @@ class FrontendSeleniumTests(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # Ensure the test database is ready when running under plain pytest
+        call_command('migrate', verbosity=0, interactive=False)
         options = Options()
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
