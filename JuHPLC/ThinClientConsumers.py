@@ -20,7 +20,7 @@ class ThinClientConsumer(AsyncWebsocketConsumer):
         }))
 
     async def disconnect(self, close_code):
-        ThinClientConsumer.clients.pop(self.fqdn)
+        ThinClientConsumer.clients.pop(getattr(self, 'fqdn', None), None)
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
