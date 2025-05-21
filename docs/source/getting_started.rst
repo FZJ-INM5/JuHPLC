@@ -23,6 +23,12 @@ After this it is required to create a user account using:
 
 and following the instructions on screen.
 
+Admin Interface
+~~~~~~~~~~~~~~~
+Start the development server and navigate to ``/admin/`` on your device.
+Log in with the superuser account you just created to manage chromatograms
+and other data through Django's built-in interface.
+
 Usage
 ~~~~~
 Use your favourite webbrowser and connect to the IP-address / name of the raspberry with it.

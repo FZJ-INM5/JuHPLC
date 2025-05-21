@@ -36,6 +36,10 @@ python3 /home/pi/JuHPLC/manage.py createsuperuser
 ```
 and following the instructions on screen.
 
+Once your server is running you can visit ``/admin/`` on the same host and
+log in with the superuser credentials to manage chromatograms and related
+data.
+
 ## Running the tests
 
 Currently none - Todo
