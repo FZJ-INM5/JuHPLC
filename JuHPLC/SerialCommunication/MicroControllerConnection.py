@@ -19,7 +19,7 @@ class MicroControllerConnection:
     Offers a connection to a microcontroller that can be used for data acquisition (and maybe at a later point changing parameters)
     """
 
-    def __init__(self, chromatogram: Any, portname: str, baudrate: int = 9600, timeout: int = 2) -> None:
+    def __init__(self, chromatogram: Any, portname: str, baudrate: int = 9600, timeout: int = 2, serial_module=serial) -> None:
         self.logger = logging.getLogger(__name__)
 
         self.channel_layer = get_channel_layer()
@@ -33,8 +33,9 @@ class MicroControllerConnection:
         """
 
         self.chromatogram = chromatogram
+        self.serial_module = serial_module
 
-        if self.isvalidportname(portname):
+        if self.isvalidportname(portname, serial_module=self.serial_module):
             self.portname = portname
         else:
             raise ValueError("there is no serial port named " + portname)
@@ -46,7 +47,7 @@ class MicroControllerConnection:
 
         self.prefixChannelName = True
 
-        self.serialInterface = serial.Serial(portname, baudrate, timeout=self.timeout)
+        self.serialInterface = self.serial_module.Serial(portname, baudrate, timeout=self.timeout)
 
         if self.prefixChannelName:
             self.dataCache = {self.prefix + "Counter": []}
@@ -62,11 +63,11 @@ class MicroControllerConnection:
         self.stopacquisitionflag = True
 
     @staticmethod
-    def isvalidportname(portname: str) -> bool:
-        for tmp in serial.tools.list_ports.comports():
+    def isvalidportname(portname: str, serial_module=serial) -> bool:
+        for tmp in serial_module.tools.list_ports.comports():
             if tmp.device == portname:
-                return 1
-        return 0
+                return True
+        return False
 
 
     def acquisitionmethod(self) -> None:
