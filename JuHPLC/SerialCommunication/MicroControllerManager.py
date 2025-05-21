@@ -1,7 +1,17 @@
 from typing import Dict, List, Optional
 
-from JuHPLC.SerialCommunication.MicroControllerConnection import MicroControllerConnection
-from JuHPLC.SerialCommunication.MicroControllerConnectionViaThinclient import MicroControllerConnectionViaThinclient
+from JuHPLC.SerialCommunication.MicroControllerConnection import (
+    MicroControllerConnection,
+)
+from JuHPLC.SerialCommunication.MicroControllerConnectionViaThinclient import (
+    MicroControllerConnectionViaThinclient,
+)
+
+
+class ActiveAcquisitionError(Exception):
+    """Raised when a port already has an active acquisition."""
+
+    pass
 
 
 class MicroControllerManager:
@@ -21,7 +31,12 @@ class MicroControllerManager:
             con.startacquisition()
             return
 
-        raise Exception("Already an acquisiton active on port "+portname+" for chromatogram "+str(self.activeConnections[portname].chromatogram.id))
+        raise ActiveAcquisitionError(
+            "Already an acquisition active on port "
+            + portname
+            + " for chromatogram "
+            + str(self.activeConnections[portname].chromatogram.id)
+        )
 
     def getConnectionForChromatogramID(self, chromatogramid: int) -> Optional[any]:
         for i in self.activeConnections:

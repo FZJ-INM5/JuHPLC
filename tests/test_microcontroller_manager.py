@@ -3,7 +3,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "WebApp.settings")
 django.setup()
 
 import unittest
-from JuHPLC.SerialCommunication.MicroControllerManager import MicroControllerManager
+from JuHPLC.SerialCommunication.MicroControllerManager import (
+    MicroControllerManager,
+    ActiveAcquisitionError,
+)
 
 class DummyConnection:
     def __init__(self, chromatogram, port):
@@ -63,7 +66,7 @@ class MicroControllerManagerTests(unittest.TestCase):
         self.assertEqual(len(conns), 2)
 
         # starting again on an already used port should raise
-        with self.assertRaises(Exception):
+        with self.assertRaises(ActiveAcquisitionError):
             self.manager.startacquisition(chrom, 'COM1 - desc')
 
         # cleanup
