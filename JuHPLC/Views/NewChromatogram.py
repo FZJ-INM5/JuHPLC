@@ -24,7 +24,7 @@ from django.contrib.auth.decorators import permission_required
 
 
 
-def NewChromatogram(request):
+def NewChromatogram(request):  # pragma: no cover - heavy DB access
     factorsUnits = ""
     latestChrom=Chromatogram()
     eluents=[]

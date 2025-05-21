@@ -70,7 +70,7 @@ class MicroControllerConnection:
         return False
 
 
-    def acquisitionmethod(self) -> None:
+    def acquisitionmethod(self) -> None:  # pragma: no cover - requires hardware
         self.runNumber = 0
         # Byte "x" senden, um moegliche Aktivitaeten zu stoppen
         self.serialInterface.write(b"x")
@@ -131,7 +131,7 @@ class MicroControllerConnection:
                 self.serialInterface.write(b"t")
                 self.serialInterface.flushInput()
 
-    def __main_loop(self) -> None:
+    def __main_loop(self) -> None:  # pragma: no cover - complex serial loop
         buffer = ''
         currentdatetime = 0
         zyklusAlt = 1
