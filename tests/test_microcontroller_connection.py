@@ -4,6 +4,7 @@ django.setup()
 
 import unittest
 from JuHPLC.SerialCommunication.MicroControllerConnection import MicroControllerConnection
+from types import SimpleNamespace
 
 class DummySerial:
     def __init__(self):
@@ -25,22 +26,26 @@ class DummyChrom:
         self.Datetime = 0
         self.MaxRuntime = 0
 
+class DummySerialModule:
+    def __init__(self, ports=None):
+        self.created = []
+        ports = ports or []
+        self.tools = SimpleNamespace(list_ports=SimpleNamespace(comports=lambda: [SimpleNamespace(device=p) for p in ports]))
+
+    def Serial(self, *a, **k):
+        self.created.append(a[0] if a else None)
+        return DummySerial()
+
 class MicroControllerConnectionTests(unittest.TestCase):
     def test_isvalidportname(self):
-        class Port:
-            def __init__(self, device):
-                self.device = device
-        import serial.tools.list_ports
-        serial.tools.list_ports.comports = lambda: [Port('A'), Port('B')]
-        self.assertTrue(MicroControllerConnection.isvalidportname('B'))
-        self.assertFalse(MicroControllerConnection.isvalidportname('C'))
+        dummy_serial = DummySerialModule(['A', 'B'])
+        self.assertTrue(MicroControllerConnection.isvalidportname('B', serial_module=dummy_serial))
+        self.assertFalse(MicroControllerConnection.isvalidportname('C', serial_module=dummy_serial))
 
     def test_send_aquisition_mode(self):
         chrom = DummyChrom(500)
-        import serial
-        serial.Serial = lambda *a, **k: DummySerial()
-        MicroControllerConnection.isvalidportname = staticmethod(lambda port: True)
-        conn = MicroControllerConnection(chrom, 'A')
+        dummy_serial = DummySerialModule(['A'])
+        conn = MicroControllerConnection(chrom, 'A', serial_module=dummy_serial)
         conn.serialInterface = DummySerial()
         conn._MicroControllerConnection__sendAquisitionMode()
         self.assertEqual(conn.serialInterface.written, [b'C500'])
