@@ -1,7 +1,11 @@
-class HelperClass():
+from typing import Any
+from django.http import HttpRequest
+
+
+class HelperClass:
 
     @staticmethod
-    def get_client_ip(request):
+    def get_client_ip(request: HttpRequest) -> str:
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
             ip = x_forwarded_for.split(',')[0]
@@ -10,7 +14,7 @@ class HelperClass():
         return ip
 
     @staticmethod
-    def islocalhost(request):
+    def islocalhost(request: HttpRequest) -> bool:
         return True #aktuell jedes remote erlauben
         localHostAddresses = ['127.0.0.1', 'localhost', '::1']
         if HelperClass.get_client_ip(request) in localHostAddresses:

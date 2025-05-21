@@ -6,6 +6,8 @@ import datetime
 import serial
 import serial.tools.list_ports
 
+from typing import Any
+
 from JuHPLC.models import *
 from django.forms.models import model_to_dict
 from channels.layers import get_channel_layer
@@ -17,7 +19,7 @@ class MicroControllerConnection:
     Offers a connection to a microcontroller that can be used for data acquisition (and maybe at a later point changing parameters)
     """
 
-    def __init__(self, chromatogram, portname, baudrate=9600, timeout=2):
+    def __init__(self, chromatogram: Any, portname: str, baudrate: int = 9600, timeout: int = 2) -> None:
         self.logger = logging.getLogger(__name__)
 
         self.channel_layer = get_channel_layer()
@@ -52,22 +54,22 @@ class MicroControllerConnection:
             self.dataCache = {"Counter": []}
 
 
-    def startacquisition(self):
+    def startacquisition(self) -> None:
         self.stopacquisitionflag = False
         self.thread = _thread.start_new_thread(self.acquisitionmethod,())
 
-    def stopacquisition(self):
+    def stopacquisition(self) -> None:
         self.stopacquisitionflag = True
 
     @staticmethod
-    def isvalidportname(portname):
+    def isvalidportname(portname: str) -> bool:
         for tmp in serial.tools.list_ports.comports():
             if tmp.device == portname:
                 return 1
         return 0
 
 
-    def acquisitionmethod(self):
+    def acquisitionmethod(self) -> None:
         self.runNumber = 0
         # Byte "x" senden, um moegliche Aktivitaeten zu stoppen
         self.serialInterface.write(b"x")
@@ -97,7 +99,7 @@ class MicroControllerConnection:
 
         self.serialInterface.write(b"x")
 
-    def __sendAquisitionMode(self):
+    def __sendAquisitionMode(self) -> None:
         if self.chromatogram.SampleRate == 1:
             self.serialInterface.write(b"c")
         elif self.chromatogram.SampleRate >= 1000:
@@ -105,12 +107,12 @@ class MicroControllerConnection:
         else:
             self.serialInterface.write(b"C" + bytes(str(self.chromatogram.SampleRate), 'ascii'))
 
-    def __throwRemainingBytesAway(self):
+    def __throwRemainingBytesAway(self) -> None:
         if self.serialInterface.inWaiting() > 0:
             # rest lesen und verwerfen
             self.serialInterface.read(self.serialInterface.inWaiting())
 
-    def setRheodyneSwitch(self):
+    def setRheodyneSwitch(self) -> None:
         if self.chromatogram.RheodyneSwitch:
             self.serialInterface.write(b"m")
             self.serialInterface.flushInput()
@@ -128,7 +130,7 @@ class MicroControllerConnection:
                 self.serialInterface.write(b"t")
                 self.serialInterface.flushInput()
 
-    def __main_loop(self):
+    def __main_loop(self) -> None:
         buffer = ''
         currentdatetime = 0
         zyklusAlt = 1
