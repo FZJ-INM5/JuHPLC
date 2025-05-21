@@ -6,3 +6,6 @@ csscompressor==0.9.5
 channels==3.0.4
 websocket-client==1.2.2
 pytest
+selenium
+coverage
+pytest-cov
