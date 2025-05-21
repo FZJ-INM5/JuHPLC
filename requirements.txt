@@ -5,3 +5,4 @@ django_compressor==2.4.1
 csscompressor==0.9.5
 channels==3.0.4
 websocket-client==1.2.2
+pytest
