@@ -1,16 +1,17 @@
+from typing import Dict, List, Optional
+
 from JuHPLC.SerialCommunication.MicroControllerConnection import MicroControllerConnection
 from JuHPLC.SerialCommunication.MicroControllerConnectionViaThinclient import MicroControllerConnectionViaThinclient
 
 
 class MicroControllerManager:
 
-    instance = None
+    instance: Optional["MicroControllerManager"] = None
 
-    def __init__(self):
-        self.activeConnections = {}
-        pass
+    def __init__(self) -> None:
+        self.activeConnections: Dict[str, any] = {}
 
-    def startacquisition(self, chromatogram, portname):
+    def startacquisition(self, chromatogram: any, portname: str) -> None:
         if portname not in self.activeConnections:
             if len(portname.split(' - ')) == 2:
                 con = MicroControllerConnection(chromatogram, portname.split(' - ')[0])
@@ -22,14 +23,14 @@ class MicroControllerManager:
 
         raise Exception("Already an acquisiton active on port "+portname+" for chromatogram "+str(self.activeConnections[portname].chromatogram.id))
 
-    def getConnectionForChromatogramID(self,chromatogramid):
+    def getConnectionForChromatogramID(self, chromatogramid: int) -> Optional[any]:
         for i in self.activeConnections:
             if self.activeConnections[i].chromatogram.id == int(chromatogramid):
                 return self.activeConnections[i]
         return None
 
-    def getAllConnectionsForChromatogramID(self,chromatogramid):
-        res = []
+    def getAllConnectionsForChromatogramID(self, chromatogramid: int) -> Optional[List[any]]:
+        res: List[any] = []
         for i in self.activeConnections:
             if self.activeConnections[i].chromatogram.id == int(chromatogramid):
                 res.append(self.activeConnections[i])
@@ -38,7 +39,7 @@ class MicroControllerManager:
             return res
         return None
 
-    def stopacquisitionforchromatogram(self,chromatogram):
+    def stopacquisitionforchromatogram(self, chromatogram: any) -> bool:
         for i in self.activeConnections:
             if self.activeConnections[i].chromatogram == chromatogram:
                 self.activeConnections[i].stopacquisition()
@@ -47,25 +48,25 @@ class MicroControllerManager:
         return True
 
 
-    def stopacquisitionforportname(self, portname):
+    def stopacquisitionforportname(self, portname: str) -> None:
         self.activeConnections[portname].stopacquisition()
         del self.activeConnections[portname]
 
-    def chromatogramhasactiveacquisition(self,chromatogram):
+    def chromatogramhasactiveacquisition(self, chromatogram: any) -> bool:
         for i in self.activeConnections:
             if self.activeConnections[i].chromatogram == chromatogram:
                 return True
 
         return False
 
-    def getactivechromatogramids(self):
-        result = []
+    def getactivechromatogramids(self) -> List[int]:
+        result: List[int] = []
         for i in self.activeConnections:
             result.append(self.activeConnections[i].chromatogram.id)
         return result
 
     @staticmethod
-    def getinstance():
+    def getinstance() -> "MicroControllerManager":
         """
         :return: MicroControllerManager
         :rtype: MicroControllerManager

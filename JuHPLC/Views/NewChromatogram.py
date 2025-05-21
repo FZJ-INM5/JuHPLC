@@ -1,6 +1,6 @@
 import jsonpickle
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 
 from JuHPLC.API import HplcData
 from JuHPLC.API.JSONChromatogram import JSONJuHPLCChromatogram
@@ -19,6 +19,7 @@ from JuHPLC.HelperClass import HelperClass
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.serializers import serialize
+from typing import List
 from django.contrib.auth.decorators import permission_required
 
 
@@ -61,7 +62,8 @@ def NewChromatogram(request):
     })
 
 
-def serial_ports():
+
+def serial_ports() -> List[str]:
     """ Lists serial port names
 
         :raises EnvironmentError:
@@ -164,7 +166,7 @@ def ChromatogramSaveComment(request,chromatogramid):
     return HttpResponse(data2)
 
 
-def checkAccess(request):
+def checkAccess(request: HttpRequest) -> None:
     if not HelperClass.islocalhost(request):
         raise Exception("You have to control the unit from the local machine!!")
 

@@ -1,0 +1,13 @@
+[run]
+source =
+    JuHPLC
+[report]
+include =
+    JuHPLC/HelperClass.py
+    JuHPLC/SerialCommunication/MicroControllerManager.py
+    JuHPLC/SerialCommunication/MicroControllerConnection.py
+    JuHPLC/Views/NewChromatogram.py
+    JuHPLC/templatetags/cssfile.py
+    JuHPLC/templatetags/javascriptfile.py
+    JuHPLC/templatetags/fontfile.py
+    JuHPLC/templatetags/fromunix.py

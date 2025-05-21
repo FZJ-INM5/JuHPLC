@@ -1,10 +1,12 @@
+from typing import Any
+
 from django import template
 from WebApp import settings
 
 register = template.Library()
 
 @register.simple_tag
-def cssfile(inputfile, export):
+def cssfile(inputfile: str, export: bool) -> str:
     if not export:
         return "<link rel=\"stylesheet\" href=\""+inputfile+"\">"
     else:
