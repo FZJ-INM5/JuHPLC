@@ -37,6 +37,11 @@ class NewChromatogramTests(unittest.TestCase):
         ports = serial_ports()
         self.assertEqual(ports, ['/dev/ttyUSB0'])
 
+    def test_serial_ports_unsupported(self):
+        sys.platform = 'unknown'
+        with self.assertRaises(EnvironmentError):
+            serial_ports()
+
     def test_check_access(self):
         req = HttpRequest()
         HelperClass.islocalhost = staticmethod(lambda r: True)
